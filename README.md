@@ -1,35 +1,16 @@
 # FaceShifter &mdash; Unofficial PyTorch Implementation
 ![](./assets/teaser_v8.jpg)
 ![](./assets/deepfake_method_stage1_v8.png)
-![issueBadge](https://img.shields.io/github/issues/mindslab-ai/faceshifter)   ![starBadge](https://img.shields.io/github/stars/mindslab-ai/faceshifter)   ![repoSize](https://img.shields.io/github/repo-size/mindslab-ai/faceshifter)  ![lastCommit](https://img.shields.io/github/last-commit/mindslab-ai/faceshifter) 
 
-Unofficial Implementation of [FaceShifter: Towards High Fidelity And Occlusion Aware Face Swapping](https://arxiv.org/abs/1912.13457) with [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning).
+Raspberrypi  Implementation of [FaceShifter: Towards High Fidelity And Occlusion Aware Face Swapping](https://arxiv.org/abs/1912.13457) with [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning).
 In the paper, there are two networks for full pipe-line, AEI-Net and HEAR-Net. We only implement the AEI-Net, which is main network for face swapping.
-
-### Take a look [HifiFace](https://github.com/mindslab-ai/hififace), our implementation of a more recent face swapping model.
 
 ## Datasets
 
 ### Preparing Data
 
-You need to download and unzip:
-- [FFHQ](https://github.com/NVlabs/ffhq-dataset) 
-- CelebA-HQ ([Unofficial Download Script](https://github.com/suvojit-0x55aa/celebA-HQ-dataset-download))
-- VGGFace ([Unofficial Download Script](https://github.com/ndaidong/vgg-faces-utils))
 
 ### Preprocess Data
-Preprocessing code is mainly based on [Nvidia's FFHQ preprocessing code](https://github.com/NVlabs/ffhq-dataset/blob/bb67086731d3bd70bc58ebee243880403726197a/download_ffhq.py#L259-L349).
-You may modify our [preprocess](./preprocess) with multi-processing functions to finish pre-processing step much faster.
-```bash
-# build docker image from Dockerfile
-docker build -t dlib:0.0 ./preprocess
-# run docker container from image
-docker run -itd --ipc host -v /PATH_TO_THIS_FOLDER/preprocess:/workspace -v /PATH_TO_THE_DATA:/DATA -v /PATH_TO_SAVE_DATASET:/RESULT --name dlib --tag dlib:0.0
-# attach
-docker attach dlib
-# preprocess with dlib
-python preprocess.py --root /DATA --output_dir /RESULT
-```
 
 ## Training
 ### Configuration
