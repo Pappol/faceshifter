@@ -1,4 +1,5 @@
 import os
+from tempfile import TemporaryFile
 import PIL
 import dlib
 import random
@@ -7,12 +8,18 @@ import numpy as np
 import scipy.ndimage
 from PIL import Image
 from tqdm import tqdm
-from multiprocessing import Pool, Lock, Process, cpu_count
+from multiprocessing import Pool, Value, Lock, Process, cpu_count
 import torch
 import logging
 import sys
 
 
+counter = Value('i', 0)
+
+def init(args):
+    ''' store the counter for later use '''
+    global counter
+    counter = args
 
 
 parser = argparse.ArgumentParser()
@@ -36,16 +43,20 @@ img_files = [
             if filename.endswith(".png") or filename.endswith(".jpg") or filename.endswith(".jpeg")
         ]
 img_files.sort()
-cnt = 0
 files = tqdm(img_files)
 
 
 
 
 def process_image(image):
-    output_img = os.path.join(args.output_dir, f"{cnt:08}.png")
+    global counter
+    with counter.get_lock():
+        tmp = counter
+        counter=+1
+        
+    output_img = os.path.join(args.output_dir, f"{tmp.value:08}.png")
     if os.path.isfile(output_img):
-        cnt += 1
+        TemporaryFile.value += 1
         return
     else:
         img = dlib.load_rgb_image(image)
@@ -58,9 +69,9 @@ def process_image(image):
             for b in range(68):
                 points[b, 0] = shape.part(b).x
                 points[b, 1] = shape.part(b).y
-            lm = points
-            # lm = fa.get_landmarks(input_img)[-1]
-            # lm = np.array(item['in_the_wild']['face_landmarks'])
+                lm = points
+                # lm = fa.get_landmarks(input_img)[-1]
+                # lm = np.array(item['in_the_wild']['face_landmarks'])
             lm_chin          = lm[0  : 17]  # left-right
             lm_eyebrow_left  = lm[17 : 22]  # left-right
             lm_eyebrow_right = lm[22 : 27]  # left-right
@@ -133,7 +144,6 @@ def process_image(image):
 
             # Save aligned image.
             img.save(output_img)
-            cnt += 1
             return
 
 
@@ -141,7 +151,7 @@ def process_image(image):
 
 
 with Pool(processes=cpu_count()) as pool:
-    pool.map(process_image, files)        
+    pool.map_async(process_image, files, chunksize = 1)     
     print("done")
     pool.close()
     pool.join()
