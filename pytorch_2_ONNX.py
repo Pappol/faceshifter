@@ -35,4 +35,4 @@ target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).t
 source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
 print('image opened')
 
-torch.onnx.export(model, (target_img, source_img), 'super_resolution.onnx')
+torch.onnx.export(model, (target_img, source_img), args.output_path)
