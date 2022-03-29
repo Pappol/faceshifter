@@ -17,7 +17,7 @@ parser.add_argument("--target_image", type=str, required=True,
 parser.add_argument("--source_image", type=str, required=True,
                     help="path of preprocessed source face image")
 parser.add_argument("--output_path", type=str, default="output.onnx",
-                    help="path of output image")
+                    help="path of output onnx")
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu")
 args = parser.parse_args()
@@ -31,8 +31,8 @@ model.eval()
 model.freeze()
 model.to(device)
 
-target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0)
-source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0)
+target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
+source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
 print('image opened')
 
 torch.onnx.export(model, (target_img, source_img), 'super_resolution.onnx')
