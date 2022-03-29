@@ -16,7 +16,7 @@ parser.add_argument("--target_image", type=str, required=True,
                     help="path of preprocessed target face image")
 parser.add_argument("--source_image", type=str, required=True,
                     help="path of preprocessed source face image")
-parser.add_argument("--output_path", type=str, default="output.onnx",
+parser.add_argument("--output_path", type=str, default="ONNX/model.onnx",
                     help="path of output onnx")
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu")
@@ -33,6 +33,12 @@ model.to(device)
 
 target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
 source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
-print('image opened')
 
-torch.onnx.export(model, (target_img, source_img), args.output_path)
+
+torch.onnx.export(model, (target_img, source_img), args.output_path, 
+                    export_params=True,opset_version=11, do_constant_folding=True,
+                    input_names = ['input'],
+                    use_external_data_format=True,
+                    output_names = ['output'],
+                    dynamic_axes={'input' : {0 : 'batch_size'},    # variable length axes
+                                'output' : {0 : 'batch_size'}})
