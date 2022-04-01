@@ -24,7 +24,7 @@ parser.add_argument("--images_folder", type=str, default="data/faceshifter-datas
                     help="path of preprocessed source face image"),
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu"),
-parser.add_argument("--num_images", type=int, default=100,
+parser.add_argument("--num_images", type=int, default=4,
                     help="number of images used to convert the model")
 
 args = parser.parse_args()
@@ -34,25 +34,17 @@ def optimizeMultiLevelEncoder(argument):
     
     device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
 
-    converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "MultiLevelEncoder_gen_Lite.h5")
+    converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "MultilevelEncoder")
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
-
-    #setup for data preparation
-    hp = OmegaConf.load(argument.config)
-    model = AEINet.load_from_checkpoint(argument.checkpoint_path, hp=hp)
-
-    model.eval()
-    model.freeze()
-    model.to(device)
 
     def representative_dataset_gen():
         
         for i in range(argument.num_images):
             #choose target image
             target_img_number = (i)
-            target_img_path = os.path.join(argument.images_folder, f"{target_img_number.value:08}.png")
+            target_img_path = os.path.join(argument.images_folder, f"{target_img_number:08}.png")
             
-            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
+            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0)
             yield [(target_img)]
     
     converter.representative_dataset = representative_dataset_gen

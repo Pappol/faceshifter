@@ -33,8 +33,5 @@ tflite_model_Multi = converter_Multi.convert()
 
 # Save the models
 
-with open(args.ex_data + "ADD_gen_Lite.h5", 'wb') as f:
-    f.write(tflite_model_ADD)
-
-with open(args.ex_data + "MultilevelEncoder_Lite.h5", 'wb') as f:
-    f.write(tflite_model_Multi)
+tflite_model_ADD.save(args.ex_data + "ADD_gen.tflite_tf")
+tflite_model_Multi.save(args.ex_data + "MultilevelEncoder_tf")

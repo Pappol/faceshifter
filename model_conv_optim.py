@@ -1,7 +1,6 @@
 import argparse
 from PIL import Image
 from omegaconf import OmegaConf
-from onnx_2_TFLite import ADD_gen_onnx
 import torch.onnx
 import torch
 from torchvision import transforms
@@ -52,7 +51,7 @@ def representative_dataset_gen_Multi(device, num_images, image_path):
             target_img_number = (i)
             target_img_path = os.path.join(image_path, f"{target_img_number.value:08}.png")
             
-            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
+            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0)
             yield [(target_img)]
 
 
@@ -85,6 +84,8 @@ def main(config, checkpoint_path, output_path, target_image, source_image, gpu_n
     converter_Multi = tf.lite.TFLiteConverter.from_saved_model(tflite_path+ "MultilevelEncoder_tf")
     tflite_Multi = converter_Multi.convert()
 
+    """
+
     #optimize TFLite
     tflite_ADD.optimizations = [tf.lite.Optimize.DEFAULT]
     tflite_Multi.optimizations = [tf.lite.Optimize.DEFAULT]
@@ -99,6 +100,7 @@ def main(config, checkpoint_path, output_path, target_image, source_image, gpu_n
     #save optimized TFLite model
     with open(tflite_path + "MultilevelEncoder_quant.tflite", "wb") as f:
         f.write(tflite_quant_model)
+    """
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
