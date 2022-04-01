@@ -5,6 +5,9 @@ argparse
 tensorboard
 scikit-image
 omegaconf
-pytorch-lightning==0.9.0
-torch==1.3.0
-torchvision==0.4.1
+pytorch-lightning
+torch
+torchvision
+
+tensorflow
+tensorflow_probability
