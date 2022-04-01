@@ -61,12 +61,12 @@ def optimizeMultiLevelEncoder(argument):
 def optizeADD(argument):
 
     device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
-
+    physical_devices = tf.config.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(
-        device, True
+        physical_devices[0], True
     )
 
-    converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "ADD_gen_Lite.h5")
+    converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "ADD_gen")
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
     #setup for data preparation
@@ -77,13 +77,11 @@ def optizeADD(argument):
     model.freeze()
     model.to(device)
 
-    total_image_folder = os.listdir(argument.images_folder)
-
     def representative_dataset_gen():
         
         for i in range(argument.num_images):
             #choose a picture
-            source_img_path = os.path.join(argument.images_folder, f"{i.value:08}.png")
+            source_img_path = os.path.join(argument.images_folder, f"{i:08}.png")
             source_img = transforms.ToTensor()(Image.open(source_img_path)).unsqueeze(0).to(device)
 
             #prepare the image for the model
@@ -92,18 +90,20 @@ def optizeADD(argument):
             z_id = z_id.detach()
 
             #choose target image
-            target_img_number = (i+argument.num_images)%total_image_folder
-            target_img_path = os.path.join(argument.images_folder, f"{target_img_number.value:08}.png")
+            target_img_number = (i+argument.num_images)
+            target_img_path = os.path.join(argument.images_folder, f"{target_img_number:08}.png")
             
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
 
             feature_map = model.E(target_img)
+            yield z_id
+            yield feature_map
 
-            # get sample input data as numpy array
-            yield [(z_id, feature_map)]
+    def yield_corrector():
+        return (representative_dataset_gen(), next(representative_dataset_gen()))
 
 
-    converter.representative_dataset = representative_dataset_gen
+    converter.representative_dataset = yield_corrector
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.int8
     converter.inference_output_type = tf.int8
@@ -115,5 +115,4 @@ def optizeADD(argument):
     with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
         f.write(tflite_quant_model)
 
-
-optimizeMultiLevelEncoder(args)
+optizeADD(args)
