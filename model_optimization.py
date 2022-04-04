@@ -97,15 +97,15 @@ def optizeADD(argument):
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
 
             feature_map = model.E(target_img)
-            yield {'input.5': z_id, 
-                    "input.119": feature_map[5], 
-                    "input.145": feature_map[6], 
-                    "input.171": feature_map[7], 
-                    "input.27": feature_map[1], 
-                    "input.47": feature_map[2], 
-                    "input.67": feature_map[3], 
-                    "input.7": feature_map[0], 
-                    "input.93": feature_map[6]}
+            yield {'input.5': z_id,
+                    "input.119": feature_map[5],
+                    "input.145": feature_map[6],
+                    "input.171": feature_map[7],
+                    "input.27": feature_map[1],
+                    "input.47": feature_map[2],
+                    "input.67": feature_map[3],
+                    "input.7": feature_map[0],
+                    "input.93": feature_map[4]}
 
     converter.representative_dataset = representative_dataset_gen
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
