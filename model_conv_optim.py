@@ -6,7 +6,6 @@ import torch
 from torchvision import transforms
 import torch.nn.functional as F
 import onnx
-import argparse
 from onnx_tf.backend import prepare
 import tensorflow as tf
 
@@ -167,7 +166,6 @@ def main(config, checkpoint_path, output_path, target_image, source_image, gpu_n
     converter_Multi = tf.lite.TFLiteConverter.from_saved_model(tflite_path+ "MultilevelEncoder_tf")
     tflite_Multi = converter_Multi.convert()
 
-    #save the models
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", type=str, default="config/train.yaml",

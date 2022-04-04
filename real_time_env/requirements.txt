@@ -1,0 +1,17 @@
+opencv-python
+numpy
+tensorboardx
+argparse
+tensorboard
+omegaconf
+pytorch-lightning
+torch
+torchvision
+scikit-image
+imutils
+scipy
+dlib==19.17.0
+opencv-python==4.1.2.30
+pillow
+tensorflow
+tensorflow_probability
