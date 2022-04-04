@@ -97,7 +97,6 @@ def optizeADD(argument):
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
 
             feature_map = model.E(target_img)
-            item = {"z_id": z_id, "feature_map": feature_map}
             yield {
                 "z_id": z_id,
                 "z_att": feature_map
