@@ -61,6 +61,7 @@ def optimizeMultiLevelEncoder(argument):
 def optizeADD(argument):
 
     device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
+    
     physical_devices = tf.config.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(
         physical_devices[0], True
@@ -96,14 +97,14 @@ def optizeADD(argument):
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
 
             feature_map = model.E(target_img)
-            yield z_id
-            yield feature_map
+            item = {"z_id": z_id, "feature_map": feature_map}
+            yield {
+                "z_id": z_id,
+                "z_att": feature_map
+            }
 
-    def yield_corrector():
-        return (representative_dataset_gen(), next(representative_dataset_gen()))
 
-
-    converter.representative_dataset = yield_corrector
+    converter.representative_dataset = representative_dataset_gen
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.int8
     converter.inference_output_type = tf.int8
