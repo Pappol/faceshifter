@@ -54,6 +54,89 @@ def representative_dataset_gen_Multi(device, num_images, image_path):
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0)
             yield [(target_img)]
 
+#optimization function for multi-level encoder
+def optimizeMultiLevelEncoder(argument):
+    
+    device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
+
+    converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "MultilevelEncoder")
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+
+    def representative_dataset_gen():
+        
+        for i in range(argument.num_images):
+            #choose target image
+            target_img_number = (i)
+            target_img_path = os.path.join(argument.images_folder, f"{target_img_number:08}.png")
+            
+            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0)
+            yield [(target_img)]
+    
+    converter.representative_dataset = representative_dataset_gen
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.inference_input_type = tf.int8
+    converter.inference_output_type = tf.int8
+    #convert the model
+    tflite_quant_model = converter.convert()
+    #save the model
+    with open(argument.model_path + "MultiLevelEncoder_gen_Lite_optimized.tflite", 'wb') as f:
+        f.write(tflite_quant_model)
+
+def optizeADD(argument):
+
+    device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
+    
+    physical_devices = tf.config.list_physical_devices('GPU')
+    tf.config.experimental.set_memory_growth(
+        physical_devices[0], True
+    )
+
+    converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "ADD_gen")
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+
+    #setup for data preparation
+    hp = OmegaConf.load(argument.config)
+    model = AEINet.load_from_checkpoint(argument.checkpoint_path, hp=hp)
+
+    model.eval()
+    model.freeze()
+    model.to(device)
+
+    def representative_dataset_gen():
+        
+        for i in range(argument.num_images):
+            #choose a picture
+            source_img_path = os.path.join(argument.images_folder, f"{i:08}.png")
+            source_img = transforms.ToTensor()(Image.open(source_img_path)).unsqueeze(0).to(device)
+
+            #prepare the image for the model
+            z_id = model.Z(F.interpolate(source_img, size=112, mode='bilinear'))
+            z_id = F.normalize(z_id)
+            z_id = z_id.detach()
+
+            #choose target image
+            target_img_number = (i+argument.num_images)
+            target_img_path = os.path.join(argument.images_folder, f"{target_img_number:08}.png")
+            
+            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
+
+            feature_map = model.E(target_img)
+            yield [feature_map, z_id]
+
+
+
+    converter.representative_dataset = representative_dataset_gen
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.inference_input_type = tf.int8
+    converter.inference_output_type = tf.int8
+
+    #convert the model
+    tflite_quant_model = converter.convert()
+
+    #save the model
+    with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
+        f.write(tflite_quant_model)
+
 
 #main function to run the conversion and the optimization
 def main(config, checkpoint_path, output_path, target_image, source_image, gpu_num,tflite_path, num_images, image_path):
@@ -84,24 +167,7 @@ def main(config, checkpoint_path, output_path, target_image, source_image, gpu_n
     converter_Multi = tf.lite.TFLiteConverter.from_saved_model(tflite_path+ "MultilevelEncoder_tf")
     tflite_Multi = converter_Multi.convert()
 
-    """
-
-    #optimize TFLite
-    tflite_ADD.optimizations = [tf.lite.Optimize.DEFAULT]
-    tflite_Multi.optimizations = [tf.lite.Optimize.DEFAULT]
-
-    #mutli-level encoder
-    tflite_Multi.representative_dataset = representative_dataset_gen_Multi(device, num_images, image_path)
-    tflite_Multi.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    tflite_Multi.inference_input_type = tf.int8
-    tflite_Multi.inference_output_type = tf.int8
-
-    tflite_quant_model = tflite_Multi.convert()
-    #save optimized TFLite model
-    with open(tflite_path + "MultilevelEncoder_quant.tflite", "wb") as f:
-        f.write(tflite_quant_model)
-    """
-
+    #save the models
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", type=str, default="config/train.yaml",

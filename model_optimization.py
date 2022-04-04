@@ -24,7 +24,7 @@ parser.add_argument("--images_folder", type=str, default="data/faceshifter-datas
                     help="path of preprocessed source face image"),
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu"),
-parser.add_argument("--num_images", type=int, default=4,
+parser.add_argument("--num_images", type=int, default=200,
                     help="number of images used to convert the model")
 
 args = parser.parse_args()
@@ -97,10 +97,8 @@ def optizeADD(argument):
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
 
             feature_map = model.E(target_img)
-            yield {
-                "z_id": z_id,
-                "z_att": feature_map
-            }
+            yield [feature_map, z_id]
+
 
 
     converter.representative_dataset = representative_dataset_gen
@@ -115,4 +113,4 @@ def optizeADD(argument):
     with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
         f.write(tflite_quant_model)
 
-optizeADD(args)
+optimizeMultiLevelEncoder(args)
