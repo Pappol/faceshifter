@@ -33,10 +33,10 @@ args = parser.parse_args()
 def optimizeMultiLevelEncoder(argument):
     
     device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
-
+    #load model from saved checkpoint
     converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "MultilevelEncoder")
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
-
+    #setup for data preparation
     def representative_dataset_gen():
         
         for i in range(argument.num_images):
@@ -46,7 +46,7 @@ def optimizeMultiLevelEncoder(argument):
             
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0)
             yield [(target_img)]
-    
+    #converter setup
     converter.representative_dataset = representative_dataset_gen
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.int8
@@ -61,16 +61,16 @@ def optimizeMultiLevelEncoder(argument):
 def optizeADD(argument):
 
     device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
-    
+    #set experimental memory growth
     physical_devices = tf.config.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(
         physical_devices[0], True
     )
-
+    #load model for converter
     converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "ADD_gen")
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
 
-    #setup for data preparation
+    #load model for data preparation
     hp = OmegaConf.load(argument.config)
     model = AEINet.load_from_checkpoint(argument.checkpoint_path, hp=hp)
 
@@ -78,6 +78,7 @@ def optizeADD(argument):
     model.freeze()
     model.to(device)
 
+    #setup for data preparation
     def representative_dataset_gen():
         
         for i in range(argument.num_images):
@@ -97,16 +98,17 @@ def optizeADD(argument):
             target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0).to(device)
 
             feature_map = model.E(target_img)
-            yield {'input.5': z_id,
-                    "input.119": feature_map[5],
-                    "input.145": feature_map[6],
-                    "input.171": feature_map[7],
-                    "input.27": feature_map[1],
-                    "input.47": feature_map[2],
-                    "input.67": feature_map[3],
-                    "input.7": feature_map[0],
-                    "input.93": feature_map[4]}
-
+            #converting to cpu and numpy and prepraring with dictionary signature
+            yield {'input.5': z_id.cpu().numpy(),
+                    "input.119": feature_map[5].cpu().numpy(),
+                    "input.145": feature_map[6].cpu().numpy(),
+                    "input.171": feature_map[7].cpu().numpy(),
+                    "input.27": feature_map[1].cpu().numpy(),
+                    "input.47": feature_map[2].cpu().numpy(),
+                    "input.67": feature_map[3].cpu().numpy(),
+                    "input.7": feature_map[0].cpu().numpy(),
+                    "input.93": feature_map[4].cpu().numpy()}
+    #converter setup
     converter.representative_dataset = representative_dataset_gen
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
     converter.inference_input_type = tf.int8

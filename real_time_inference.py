@@ -106,6 +106,7 @@ def main(args):
     #load model
     device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else 'cpu')
     hp = OmegaConf.load(args.config)
+    
     model = AEINet.load_from_checkpoint(args.checkpoint_path, hp=hp)
     model.eval()
     model.freeze()
