@@ -94,7 +94,7 @@ def lendmarks(image, detector, shape_predictor):
             image += (scipy.ndimage.gaussian_filter(image, [blur, blur, 0]) - image) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
             image += (np.median(image, axis=(0,1)) - image) * np.clip(mask, 0.0, 1.0)
         # Transform.
-        image = image.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
+        image = image.transform((transform_size, transform_sizree), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
         if output_size < transform_size:
             image = image.resize((output_size, output_size), PIL.Image.ANTIALIAS)
 
@@ -106,7 +106,7 @@ def main(args):
     #load model
     device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else 'cpu')
     hp = OmegaConf.load(args.config)
-    
+
     model = AEINet.load_from_checkpoint(args.checkpoint_path, hp=hp)
     model.eval()
     model.freeze()
@@ -134,12 +134,38 @@ def main(args):
 
     torch.backends.cudnn.benchmark = False
 
+    #import tflite multilevel encoder
+    interpreter_MultiLevelEncoder = tf.lite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
+    input_index = interpreter_MultiLevelEncoder.get_input_details()[0]["index"]
+    
+    output_index = interpreter_MultiLevelEncoder.get_output_details()[0]["index"]
+
+    #import tflite ADD 
+    interpreter_ADD = tf.lite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
+    input_index_ADD = interpreter_ADD.get_input_details()[0]["index"]
+    output_index_ADD = interpreter_ADD.get_output_details()[0]["index"]
+
+
     while True:
         ret, frame = cap.read()
         frame = lendmarks(frame, detector, predictor)
-        feature_map = model.E(frame)
-        output = model.G(feature_map, z_id)
-        cv2.imshow("Frame", output.detach().cpu().numpy()[0].transpose(1,2,0))
+        interpreter_MultiLevelEncoder.set_tensor(input_index, frame)
+        interpreter_MultiLevelEncoder.invoke()
+        feature_map = interpreter_MultiLevelEncoder.get_tensor(output_index)
+        input_ADD_format = {'input.5': z_id.cpu().numpy(),
+                    "input.119": feature_map[5].cpu().numpy(),
+                    "input.145": feature_map[6].cpu().numpy(),
+                    "input.171": feature_map[7].cpu().numpy(),
+                    "input.27": feature_map[1].cpu().numpy(),
+                    "input.47": feature_map[2].cpu().numpy(),
+                    "input.67": feature_map[3].cpu().numpy(),
+                    "input.7": feature_map[0].cpu().numpy(),
+                    "input.93": feature_map[4].cpu().numpy()}
+        interpreter_ADD.set_tensor(input_index_ADD, input_ADD_format)
+        interpreter_ADD.invoke()
+        output_ADD = interpreter_ADD.get_tensor(output_index_ADD)
+
+        cv2.imshow("Frame", output_ADD)
         if cv2.waitKey(20) & 0xFF == 27:
             break
 
@@ -147,25 +173,17 @@ def main(args):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
-                        help="path of configuration yaml file")
+                        help="path of configuration yaml file"),
+    parser.add_argument("--model_path", type=str, default="ONNX/",
+                        help="path of onnx extra data folder"),
     parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
-                        help="path of aei-net pre-trained file")
-    parser.add_argument("--onnx_out_path", type=str, default="ONNX/single/",
-                        help="path of output onnx"),
-    parser.add_argument("--tf_out_path", type=str, default="TF/single/",
-                        help="path of output tf"),
-    parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000001.png",
-                        help="path of preprocessed target face image"),
-    parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
+                        help="path of aei-net pre-trained file"),
+    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
                         help="path of preprocessed source face image"),
     parser.add_argument("--gpu_num", type=int, default=0,
                         help="number of gpu"),
     parser.add_argument("--num_images", type=int, default=100,
-                    help="number of images used to convert the model"),
-    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
-                    help="path of preprocessed source face image"),
-    parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_predictor_68_face_landmarks.dat",
-                    help="path of shape predictor")
+                        help="number of images used to convert the model")
 
     args = parser.parse_args()
 
