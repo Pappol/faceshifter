@@ -1,7 +1,6 @@
 import argparse
 from PIL import Image
 from omegaconf import OmegaConf
-from torchvision import transforms
 import torch.nn.functional as F
 import torch
 import tensorflow as tf
@@ -103,24 +102,8 @@ def lendmarks(image, detector, shape_predictor):
 
 
 def main(args):
-    #load model
-    device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else 'cpu')
-    hp = OmegaConf.load(args.config)
-
-    model = AEINet.load_from_checkpoint(args.checkpoint_path, hp=hp)
-    model.eval()
-    model.freeze()
-    model.to(device)
-
-    #load and pre process source image
-    source_img = Image.open(args.source_image)
-    source_img = transforms.ToTensor()(source_img).unsqueeze(0).to(device)
-
-    with torch.no_grad():
-        z_id = model.Z(F.interpolate(source_img, size=112, mode='bilinear'))
-        z_id = F.normalize(z_id)
-        z_id = z_id.detach()
-
+    #load z_id 
+    z_id = 
     cap = cv2.VideoCapture(0)
     # Check if the webcam is opened correctly
     if not cap.isOpened():

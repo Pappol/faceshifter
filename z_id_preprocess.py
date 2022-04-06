@@ -31,8 +31,7 @@ def main(args):
         z_id = z_id.detach()
     #save z_id
     z_id = z_id.cpu().numpy()
-    torch.save(z_id, args.save_path)
-
+    np.save(args.output_path, z_id)
 
 
 if __name__ == "__main__":
@@ -45,7 +44,7 @@ if __name__ == "__main__":
                         help="number of gpu"),
     parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
                     help="path of preprocessed source face image"),
-    parser.add_argument("--save_path", type=str, default="preprocess/z_id.pt",
+    parser.add_argument("--save_path", type=str, default="preprocess/z_id.npy",
                         help="path of z_id tensor")
 
     args = parser.parse_args()
