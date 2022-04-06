@@ -31,7 +31,7 @@ def main(args):
         z_id = z_id.detach()
     #save z_id
     z_id = z_id.cpu().numpy()
-    np.save(args.output_path, z_id)
+    np.save(args.save_path, z_id)
 
 
 if __name__ == "__main__":

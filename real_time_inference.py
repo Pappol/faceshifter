@@ -1,8 +1,6 @@
 import argparse
 from PIL import Image
 from omegaconf import OmegaConf
-import torch.nn.functional as F
-import torch
 import tensorflow as tf
 from imutils import face_utils
 import dlib
@@ -93,7 +91,7 @@ def lendmarks(image, detector, shape_predictor):
             image += (scipy.ndimage.gaussian_filter(image, [blur, blur, 0]) - image) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
             image += (np.median(image, axis=(0,1)) - image) * np.clip(mask, 0.0, 1.0)
         # Transform.
-        image = image.transform((transform_size, transform_sizree), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
+        image = image.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
         if output_size < transform_size:
             image = image.resize((output_size, output_size), PIL.Image.ANTIALIAS)
 
@@ -103,7 +101,7 @@ def lendmarks(image, detector, shape_predictor):
 
 def main(args):
     #load z_id 
-    z_id = 
+    z_id = np.load(args.z_id_path)
     cap = cv2.VideoCapture(0)
     # Check if the webcam is opened correctly
     if not cap.isOpened():
@@ -114,8 +112,6 @@ def main(args):
 
     # allow the camera to warmup
     time.sleep(0.1)
-
-    torch.backends.cudnn.benchmark = False
 
     #import tflite multilevel encoder
     interpreter_MultiLevelEncoder = tf.lite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
@@ -167,6 +163,8 @@ if __name__ == "__main__":
                         help="number of gpu"),
     parser.add_argument("--num_images", type=int, default=100,
                         help="number of images used to convert the model")
+    parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
+                        help="path of z_id tensor")
 
     args = parser.parse_args()
 
