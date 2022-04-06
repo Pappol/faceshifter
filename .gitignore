@@ -137,6 +137,10 @@ dmypy.json
 #models
 *.pth
 
+#all saved torch tensors
+*.pt
+
 data/
 ONNX/
 chkpt/
+

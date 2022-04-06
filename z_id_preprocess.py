@@ -4,7 +4,6 @@ from omegaconf import OmegaConf
 import torch
 from torchvision import transforms
 import torch.nn.functional as F
-import tensorflow as tf
 
 from aei_net import AEINet
 from dataset import *
@@ -30,26 +29,24 @@ def main(args):
         z_id = model.Z(F.interpolate(source_img, size=112, mode='bilinear'))
         z_id = F.normalize(z_id)
         z_id = z_id.detach()
-    print(type(z_id))
+    #save z_id
+    z_id = z_id.cpu().numpy()
+    torch.save(z_id, args.save_path)
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
                         help="path of configuration yaml file"),
-    parser.add_argument("--model_path", type=str, default="ONNX/",
-                        help="path of onnx extra data folder"),
     parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
                         help="path of aei-net pre-trained file"),
-    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
-                        help="path of preprocessed source face image"),
     parser.add_argument("--gpu_num", type=int, default=0,
                         help="number of gpu"),
-    parser.add_argument("--num_images", type=int, default=100,
-                        help="number of images used to convert the model"),
-    parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000001.png",
-                    help="path of preprocessed target face image")
     parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
-                    help="path of preprocessed source face image")
+                    help="path of preprocessed source face image"),
+    parser.add_argument("--save_path", type=str, default="preprocess/z_id.pt",
+                        help="path of z_id tensor")
 
     args = parser.parse_args()
 
