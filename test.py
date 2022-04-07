@@ -27,8 +27,17 @@ parser.add_argument("--target_image", type=str, default="data/00000002.png",
 
 args = parser.parse_args()
 img = cv2.imread(args.target_image)
+img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
+aa = np.uint8(img)
+interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
+interpreter.allocate_tensors()
 
-interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
-input_index = interpreter_MultiLevelEncoder.get_input_details()[0]["input.1"]
-print (input_index)
-#multi_signature(img)
+input_details = interpreter.get_input_details()
+output_details = interpreter.get_output_details()
+
+interpreter.set_tensor(input_details[0]['index'], aa)
+
+interpreter.invoke()
+
+output_data = interpreter.get_tensor(output_details[0]['index'])
+print(output_data)
