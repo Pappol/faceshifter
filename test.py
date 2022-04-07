@@ -29,7 +29,7 @@ interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLeve
 multi_signature = interpreter_MultiLevelEncoder.get_signature_list()
 
 interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
-input_index_ADD = interpreter_ADD.get_input_details()[0]["index"]
+input_index_ADD = interpreter_ADD.get_signature_list()
 
 print (multi_signature)
 print (input_index_ADD)
