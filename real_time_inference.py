@@ -113,6 +113,9 @@ def main(args):
 
     #import tflite multilevel encoder
     interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
+    multi_signature = interpreter_MultiLevelEncoder.get_signature_runner()
+    
+    """
     input_index = interpreter_MultiLevelEncoder.get_input_details()[0]["index"]
     
     output_index = interpreter_MultiLevelEncoder.get_output_details()[0]["index"]
@@ -122,6 +125,8 @@ def main(args):
     input_index_ADD = interpreter_ADD.get_input_details()[0]["index"]
     output_index_ADD = interpreter_ADD.get_output_details()[0]["index"]
 
+    """
+    
 
     while True:
         ret, frame = cap.read()
@@ -129,6 +134,7 @@ def main(args):
         interpreter_MultiLevelEncoder.set_tensor(input_index, frame)
         interpreter_MultiLevelEncoder.invoke()
         feature_map = interpreter_MultiLevelEncoder.get_tensor(output_index)
+        
         input_ADD_format = {'input.5': z_id.cpu().numpy(),
                     "input.119": feature_map[5].cpu().numpy(),
                     "input.145": feature_map[6].cpu().numpy(),
@@ -139,6 +145,8 @@ def main(args):
                     "input.7": feature_map[0].cpu().numpy(),
                     "input.93": feature_map[4].cpu().numpy()}
         interpreter_ADD.set_tensor(input_index_ADD, input_ADD_format)
+
+
         interpreter_ADD.invoke()
         output_ADD = interpreter_ADD.get_tensor(output_index_ADD)
 
