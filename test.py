@@ -26,5 +26,5 @@ parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
 args = parser.parse_args()
 
 interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
-multi_signature = interpreter_MultiLevelEncoder.get_signature_runner()
+multi_signature = interpreter_MultiLevelEncoder.get_signature_list()
 print (multi_signature)
