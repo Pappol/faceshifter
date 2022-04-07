@@ -1,7 +1,7 @@
 import argparse
 from PIL import Image
 from omegaconf import OmegaConf
-import tensorflow as tf
+import tflite_runtime.interpreter as tflite
 from imutils import face_utils
 import dlib
 import time
@@ -114,13 +114,13 @@ def main(args):
     time.sleep(0.1)
 
     #import tflite multilevel encoder
-    interpreter_MultiLevelEncoder = tf.lite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
+    interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
     input_index = interpreter_MultiLevelEncoder.get_input_details()[0]["index"]
     
     output_index = interpreter_MultiLevelEncoder.get_output_details()[0]["index"]
 
     #import tflite ADD 
-    interpreter_ADD = tf.lite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
+    interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
     input_index_ADD = interpreter_ADD.get_input_details()[0]["index"]
     output_index_ADD = interpreter_ADD.get_output_details()[0]["index"]
 
