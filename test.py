@@ -21,15 +21,13 @@ parser.add_argument("--model_path", type=str, default="ONNX/",
 parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_predictor_68_face_landmarks.dat",
                         help="path of z_id tensor")
 parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
-                        help="path of z_id tensor")
+                        help="path of z_id tensor"),
+parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000001.png",
+                        help="path of preprocessed target face image"),
 
 args = parser.parse_args()
+img = cv2.imread(args.target_image)
 
 interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
 multi_signature = interpreter_MultiLevelEncoder.get_signature_runner()
-
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
-input_index_ADD = interpreter_ADD.get_signature_list()
-
-print (multi_signature)
-print (input_index_ADD)
+multi_signature(img)
