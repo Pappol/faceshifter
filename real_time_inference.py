@@ -13,8 +13,6 @@ import numpy as np
 import scipy.ndimage
 from PIL import Image
 
-from aei_net import AEINet
-
 def lendmarks(image, detector, shape_predictor):
     output_size = 256
     transform_size=4096
@@ -155,14 +153,6 @@ if __name__ == "__main__":
                         help="path of configuration yaml file"),
     parser.add_argument("--model_path", type=str, default="ONNX/",
                         help="path of onnx extra data folder"),
-    parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
-                        help="path of aei-net pre-trained file"),
-    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
-                        help="path of preprocessed source face image"),
-    parser.add_argument("--gpu_num", type=int, default=0,
-                        help="number of gpu"),
-    parser.add_argument("--num_images", type=int, default=100,
-                        help="number of images used to convert the model")
     parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
                         help="path of z_id tensor")
 
