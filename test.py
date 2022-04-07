@@ -29,6 +29,6 @@ args = parser.parse_args()
 img = cv2.imread(args.target_image)
 
 interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
-multi_signature = interpreter_MultiLevelEncoder.get_signature_list()
-print (multi_signature)
+input_index = interpreter_MultiLevelEncoder.get_input_details()[0]["input"]
+print (input_index)
 #multi_signature(img)
