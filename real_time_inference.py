@@ -153,6 +153,8 @@ if __name__ == "__main__":
                         help="path of configuration yaml file"),
     parser.add_argument("--model_path", type=str, default="ONNX/",
                         help="path of onnx extra data folder"),
+    parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_predictor_68_face_landmarks.dat",
+                        help="path of z_id tensor")
     parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
                         help="path of z_id tensor")
 
