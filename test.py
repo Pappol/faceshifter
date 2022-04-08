@@ -41,7 +41,6 @@ interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
-print(input_details)
 
 #input_shape = input_details[0]['shape']
 #input_data = np.array(np.random.random_sample(input_shape), dtype=np.int8)
