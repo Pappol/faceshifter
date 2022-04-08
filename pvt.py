@@ -72,8 +72,13 @@ interpreter_ADD.invoke()
 output_image = interpreter_ADD.get_tensor(output_details_ADD[0]['index'])
 print(output_image[0].shape)
 #output_image[0] = np.transpose(output_image[0], (1, 2, 0))
-out = 
-print(output_image[0].shape)
+out = np.zeros((256,256,3))
+out[:,:,0] = output_image[0][0]
+out[:,:,1] = output_image[0][1]
+out[:,:,2] = output_image[0][2]
+
+cv2.imshow("out", out)
+cv2.waitKey(0)
 
 """
 output Multilevel
