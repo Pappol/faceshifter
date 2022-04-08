@@ -63,6 +63,10 @@ for i in range(0,10):
 
     interpreter.invoke()
     print("Multi--- %s seconds ---" % (time.time() - start_time))
+    f = open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+    print("%u MHz" % (int(f.read()) / 1000))
     start_time = time.time()
     interpreter_ADD.invoke()
     print("ADD--- %s seconds ---" % (time.time() - start_time))
+    f = open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
+    print("%u MHz" % (int(f.read()) / 1000))
