@@ -29,12 +29,13 @@ parser.add_argument("--target_image", type=str, default="data/00000002.png",
 args = parser.parse_args()
 
 
-"""img = cv2.imread(args.target_image)
+"""
+img = cv2.cv2.IMREAD_UNCHANGED(args.target_image)
 img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
 aa = np.int8(img)
 """
 
-interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=6)
+interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=8)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -46,7 +47,7 @@ interpreter.set_tensor(input_details[0]['index'], input_data)
 
 output_data = interpreter.get_tensor(output_details[0]['index'])
 
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=6)
+interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=8)
 interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
