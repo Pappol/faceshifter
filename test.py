@@ -36,7 +36,7 @@ img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
 aa = np.int8(img)
 """
 
-interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
+interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -51,7 +51,7 @@ print("MUlti level encoder done --- %s seconds ---" % (time.time() - start_time)
 
 output_data = interpreter.get_tensor(output_details[0]['index'])
 
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
+interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=4)
 interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
