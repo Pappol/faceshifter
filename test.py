@@ -34,7 +34,7 @@ img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
 aa = np.int8(img)
 """
 
-interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
+interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=6)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -46,7 +46,7 @@ interpreter.set_tensor(input_details[0]['index'], input_data)
 
 output_data = interpreter.get_tensor(output_details[0]['index'])
 
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=4)
+interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=6)
 interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
@@ -57,9 +57,10 @@ print (input_shape_ADD)
 input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.int8)
 interpreter_ADD.set_tensor(input_details_ADD[0]['index'], input_data_ADD)
 
-start_time = time.time()
+for i in range(0,10):
+    start_time = time.time()
 
-interpreter.invoke()
-interpreter_ADD.invoke()
+    interpreter.invoke()
+    interpreter_ADD.invoke()
 
-print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))
