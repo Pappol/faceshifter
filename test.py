@@ -31,8 +31,9 @@ args = parser.parse_args()
 #load data
 img = cv2.imread(args.target_image)
 img = np.expand_dims(img, axis=0)
-#rotate image
-img = np.rot90(img, k=1, axes=(1, 2))
+#rotate image to fit model
+print (img.shape)
+img = np.rot90(img, k=2)
 print (img.shape)
 z_id = np.load(args.z_id_path)
 
