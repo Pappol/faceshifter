@@ -14,7 +14,7 @@ parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_pre
                         help="path of z_id tensor")
 parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
                         help="path of z_id tensor"),
-parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000003.png",
+parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000001.png",
                         help="path of preprocessed target face image"),
 
 args = parser.parse_args()
@@ -22,12 +22,9 @@ args = parser.parse_args()
 #load data
 img = cv2.imread(args.target_image)
 img = np.expand_dims(img, axis=0)
-print (img.shape)
 img = np.transpose(img, (0, 3, 1, 2))
-print (img.shape)
 
-z_id = np.load(args.z_id_path)
-z_id = np.uint8(z_id)
+z_id = np.load(args.z_id_path).astype(np.uint8)
 
 
 interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=24)
@@ -70,13 +67,11 @@ interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4)
 interpreter_ADD.invoke()
 
 output_image = interpreter_ADD.get_tensor(output_details_ADD[0]['index'])
-print(output_image.shape)
 
 opt = np.transpose(output_image[0], (1, 2, 0))
 
 plt.imshow(opt)
 plt.show()
-
 
 """
 output Multilevel
