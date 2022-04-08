@@ -30,8 +30,9 @@ args = parser.parse_args()
 
 #load data
 img = cv2.imread(args.target_image)
-#img = np.expand_dims(img, axis=0)
+img = np.expand_dims(img, axis=(0, 1))
 z_id = np.load(args.z_id_path)
+
 
 interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
 interpreter.allocate_tensors()
@@ -54,7 +55,7 @@ output_details_ADD = interpreter_ADD.get_output_details()
 #print (interpreter_ADD.get_input_details())
 
 input_shape_ADD = input_details_ADD[0]['shape']
-input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.int8)
+input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.uint8)
 interpreter_ADD.set_tensor(input_details_ADD[0]['index'], input_data_ADD)
 
 '''
