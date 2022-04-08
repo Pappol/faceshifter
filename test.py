@@ -28,22 +28,21 @@ parser.add_argument("--target_image", type=str, default="data/00000002.png",
 
 args = parser.parse_args()
 
-
-"""
+#load data
 img = cv2.cv2.IMREAD_UNCHANGED(args.target_image)
-img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
-aa = np.int8(img)
-"""
+img = np.expand_dims(img, axis=0)
+z_id = np.load(args.z_id_path)
 
 interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
 output_details = interpreter.get_output_details()
+print(output_details)
 
-input_shape = input_details[0]['shape']
-input_data = np.array(np.random.random_sample(input_shape), dtype=np.int8)
-interpreter.set_tensor(input_details[0]['index'], input_data)
+#input_shape = input_details[0]['shape']
+#input_data = np.array(np.random.random_sample(input_shape), dtype=np.int8)
+interpreter.set_tensor(input_details[0]['index'], img)
 
 output_data = interpreter.get_tensor(output_details[0]['index'])
 
@@ -58,6 +57,7 @@ input_shape_ADD = input_details_ADD[0]['shape']
 input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.int8)
 interpreter_ADD.set_tensor(input_details_ADD[0]['index'], input_data_ADD)
 
+'''
 for i in range(0,10):
     start_time = time.time()
 
@@ -67,3 +67,4 @@ for i in range(0,10):
     start_time = time.time()
     interpreter_ADD.invoke()
     print("ADD--- %s seconds ---" % (time.time() - start_time))
+'''
