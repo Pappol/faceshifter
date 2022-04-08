@@ -111,8 +111,8 @@ def optizeADD(argument):
     #converter setup
     converter.representative_dataset = representative_dataset_gen
     converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    converter.inference_input_type = tf.uint8
-    converter.inference_output_type = tf.uint8
+    converter.inference_input_type = tf.float32
+    converter.inference_output_type = tf.float32
 
     #convert the model
     tflite_quant_model = converter.convert()

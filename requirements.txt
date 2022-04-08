@@ -11,3 +11,5 @@ torchvision
 
 tensorflow
 tensorflow_probability
+tensorflow_addons
+onnx_tf

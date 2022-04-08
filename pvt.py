@@ -24,7 +24,7 @@ img = cv2.imread(args.target_image)
 img = np.expand_dims(img, axis=0)
 img = np.transpose(img, (0, 3, 1, 2))
 
-z_id = np.load(args.z_id_path).astype(np.uint8)
+z_id = np.load(args.z_id_path).astype(np.float32)
 
 
 interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=24)
@@ -54,15 +54,15 @@ z4 = interpreter.get_tensor(output_details[5]['index'])
 z5 = interpreter.get_tensor(output_details[6]['index'])
 z7 = interpreter.get_tensor(output_details[7]['index'])
 
-interpreter_ADD.set_tensor(input_details_ADD[0]['index'], z5)
-interpreter_ADD.set_tensor(input_details_ADD[1]['index'], z_id)
-interpreter_ADD.set_tensor(input_details_ADD[2]['index'], z6)
-interpreter_ADD.set_tensor(input_details_ADD[3]['index'], z2)
-interpreter_ADD.set_tensor(input_details_ADD[4]['index'], z1)
-interpreter_ADD.set_tensor(input_details_ADD[5]['index'], z3)
-interpreter_ADD.set_tensor(input_details_ADD[6]['index'], z7)
-interpreter_ADD.set_tensor(input_details_ADD[7]['index'], z8)
-interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4)
+interpreter_ADD.set_tensor(input_details_ADD[0]['index'], z5.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[1]['index'], z_id.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[2]['index'], z6.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[3]['index'], z2.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[4]['index'], z1.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[5]['index'], z3.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[6]['index'], z7.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[7]['index'], z8.astype(np.float32))
+interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4.astype(np.float32))
 
 interpreter_ADD.invoke()
 
