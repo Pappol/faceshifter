@@ -35,7 +35,7 @@ img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
 aa = np.int8(img)
 """
 
-interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=8)
+interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -47,7 +47,7 @@ interpreter.set_tensor(input_details[0]['index'], input_data)
 
 output_data = interpreter.get_tensor(output_details[0]['index'])
 
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=8)
+interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=4)
 interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
@@ -63,10 +63,7 @@ for i in range(0,10):
 
     interpreter.invoke()
     print("Multi--- %s seconds ---" % (time.time() - start_time))
-    f = open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
-    print("%u MHz" % (int(f.read()) / 1000))
+
     start_time = time.time()
     interpreter_ADD.invoke()
     print("ADD--- %s seconds ---" % (time.time() - start_time))
-    f = open("/sys/devices/system/cpu/cpu0/cpufreq/scaling_cur_freq")
-    print("%u MHz" % (int(f.read()) / 1000))
