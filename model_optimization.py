@@ -122,3 +122,4 @@ def optizeADD(argument):
         f.write(tflite_quant_model)
 
 optizeADD(args)
+optimizeMultiLevelEncoder(args)
