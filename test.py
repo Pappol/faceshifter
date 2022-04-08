@@ -30,7 +30,10 @@ args = parser.parse_args()
 
 #load data
 img = cv2.imread(args.target_image)
+print (img.shape)
 img = np.expand_dims(img, axis=0)
+print (img.shape)
+
 z_id = np.load(args.z_id_path)
 
 
