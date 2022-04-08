@@ -28,8 +28,6 @@ parser.add_argument("--target_image", type=str, default="data/00000002.png",
 
 args = parser.parse_args()
 
-start_time = time.time()
-
 
 """img = cv2.imread(args.target_image)
 img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
@@ -46,9 +44,6 @@ input_shape = input_details[0]['shape']
 input_data = np.array(np.random.random_sample(input_shape), dtype=np.int8)
 interpreter.set_tensor(input_details[0]['index'], input_data)
 
-interpreter.invoke()
-print("MUlti level encoder done --- %s seconds ---" % (time.time() - start_time))
-
 output_data = interpreter.get_tensor(output_details[0]['index'])
 
 interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=4)
@@ -61,6 +56,9 @@ input_shape_ADD = input_details_ADD[0]['shape']
 input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.int8)
 interpreter_ADD.set_tensor(input_details_ADD[0]['index'], input_data_ADD)
 
+start_time = time.time()
+
+interpreter.invoke()
 interpreter_ADD.invoke()
 
 print("--- %s seconds ---" % (time.time() - start_time))
