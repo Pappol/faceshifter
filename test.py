@@ -29,8 +29,9 @@ parser.add_argument("--target_image", type=str, default="data/00000002.png",
 args = parser.parse_args()
 
 #load data
-img = cv2.cv2.IMREAD_UNCHANGED(args.target_image)
+img = cv2.imread(args.target_image)
 img = np.expand_dims(img, axis=0)
+img = np.int8(img)
 z_id = np.load(args.z_id_path)
 
 interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
