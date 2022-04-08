@@ -33,7 +33,7 @@ start_time = time.time()
 
 img = cv2.imread(args.target_image)
 img = cv2.normalize(img,  img, 0, 255, cv2.NORM_MINMAX)
-aa = np.uint8(img)
+aa = np.int8(img)
 
 interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
 interpreter.allocate_tensors()
