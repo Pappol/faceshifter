@@ -1,5 +1,4 @@
 import argparse
-from PIL import Image
 from omegaconf import OmegaConf
 import tflite_runtime.interpreter as tflite
 from imutils import face_utils
@@ -7,12 +6,9 @@ import dlib
 import time
 import cv2
 import os
-import PIL
 import random
 import numpy as np
 import scipy.ndimage
-from PIL import Image
-import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
@@ -32,7 +28,6 @@ args = parser.parse_args()
 img = cv2.imread(args.target_image)
 img = np.expand_dims(img, axis=0)
 img = np.transpose(img, (0, 3, 1, 2))
-print (img.shape)
 z_id = np.load(args.z_id_path)
 
 
@@ -53,7 +48,6 @@ interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
 output_details_ADD = interpreter_ADD.get_output_details()
-print (interpreter_ADD.get_input_details())
 
 input_shape_ADD = input_details_ADD[0]['shape']
 input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.uint8)
