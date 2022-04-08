@@ -52,7 +52,7 @@ interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
 output_details_ADD = interpreter_ADD.get_output_details()
-print (interpreter_ADD.get_input_details())
+#print (interpreter_ADD.get_input_details())
 
 input_shape_ADD = input_details_ADD[0]['shape']
 input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.int8)
