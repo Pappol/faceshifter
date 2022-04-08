@@ -3,7 +3,7 @@ import os
 import cv2
 import argparse
 import tflite_runtime.interpreter as tflite
-
+from matplotlib import pyplot as plt
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
@@ -14,7 +14,7 @@ parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_pre
                         help="path of z_id tensor")
 parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
                         help="path of z_id tensor"),
-parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
+parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000003.png",
                         help="path of preprocessed target face image"),
 
 args = parser.parse_args()
@@ -70,15 +70,13 @@ interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4)
 interpreter_ADD.invoke()
 
 output_image = interpreter_ADD.get_tensor(output_details_ADD[0]['index'])
-print(output_image[0].shape)
-#output_image[0] = np.transpose(output_image[0], (1, 2, 0))
-out = np.zeros((256,256,3))
-out[:,:,0] = output_image[0][0]
-out[:,:,1] = output_image[0][1]
-out[:,:,2] = output_image[0][2]
+print(output_image.shape)
 
-cv2.imshow("out", out)
-cv2.waitKey(0)
+opt = np.transpose(output_image[0], (1, 2, 0))
+
+plt.imshow(opt)
+plt.show()
+
 
 """
 output Multilevel
