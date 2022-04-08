@@ -31,7 +31,6 @@ args = parser.parse_args()
 #load data
 img = cv2.imread(args.target_image)
 #img = np.expand_dims(img, axis=0)
-img = np.int8(img)
 z_id = np.load(args.z_id_path)
 
 interpreter = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
