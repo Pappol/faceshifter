@@ -56,9 +56,10 @@ input_shape_ADD = input_details_ADD[0]['shape']
 input_data_ADD = np.array(np.random.random_sample(input_shape_ADD), dtype=np.int8)
 interpreter_ADD.set_tensor(input_details_ADD[0]['index'], input_data_ADD)
 
-start_time = time.time()
+for i in range(0,10):
+    start_time = time.time()
 
-interpreter.invoke()
-interpreter_ADD.invoke()
+    interpreter.invoke()
+    interpreter_ADD.invoke()
 
-print("--- %s seconds ---" % (time.time() - start_time))
+    print("--- %s seconds ---" % (time.time() - start_time))
