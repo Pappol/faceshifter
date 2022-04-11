@@ -28,7 +28,7 @@ img = np.expand_dims(img, axis=0)
 z_id = np.load(args.z_id_path).astype(np.float32)
 
 
-interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=24)
+interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -36,7 +36,7 @@ output_details = interpreter.get_output_details()
 
 interpreter.set_tensor(input_details[0]['index'], img)
 
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=24)
+interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=4)
 interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
