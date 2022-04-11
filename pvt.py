@@ -4,6 +4,7 @@ import cv2
 import argparse
 import tflite_runtime.interpreter as tflite
 from matplotlib import pyplot as plt
+import time
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
@@ -21,13 +22,13 @@ args = parser.parse_args()
 
 #load data
 img = cv2.imread(args.target_image)
+img = np.transpose(img, (2, 0, 1))
 img = np.expand_dims(img, axis=0)
-img = np.transpose(img, (0, 3, 1, 2))
 
 z_id = np.load(args.z_id_path).astype(np.float32)
 
 
-interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=24)
+interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=4)
 interpreter.allocate_tensors()
 
 input_details = interpreter.get_input_details()
@@ -35,7 +36,7 @@ output_details = interpreter.get_output_details()
 
 interpreter.set_tensor(input_details[0]['index'], img)
 
-interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=24)
+interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=4)
 interpreter_ADD.allocate_tensors()
 
 input_details_ADD = interpreter_ADD.get_input_details()
@@ -44,7 +45,7 @@ output_details_ADD = interpreter_ADD.get_output_details()
 interpreter.invoke()
 
 #print(interpreter.get_tensor(output_details[0]['index']))
-
+"""
 z2 = interpreter.get_tensor(output_details[0]['index'])
 z1 = interpreter.get_tensor(output_details[1]['index'])
 z8 = interpreter.get_tensor(output_details[2]['index'])
@@ -70,8 +71,41 @@ output_image = interpreter_ADD.get_tensor(output_details_ADD[0]['index'])
 
 opt = np.transpose(output_image[0], (1, 2, 0))
 
-plt.imshow(opt)
-plt.show()
+"""
+print ("start")
+for i in range(0,9):
+    start_time = time.time()
+    interpreter.invoke()
+
+    #print(interpreter.get_tensor(output_details[0]['index']))
+
+    z2 = interpreter.get_tensor(output_details[0]['index'])
+    z1 = interpreter.get_tensor(output_details[1]['index'])
+    z8 = interpreter.get_tensor(output_details[2]['index'])
+    z3 = interpreter.get_tensor(output_details[3]['index'])
+    z6 = interpreter.get_tensor(output_details[4]['index'])
+    z4 = interpreter.get_tensor(output_details[5]['index'])
+    z5 = interpreter.get_tensor(output_details[6]['index'])
+    z7 = interpreter.get_tensor(output_details[7]['index'])
+
+    interpreter_ADD.set_tensor(input_details_ADD[0]['index'], z5.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[1]['index'], z_id.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[2]['index'], z6.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[3]['index'], z2.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[4]['index'], z1.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[5]['index'], z3.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[6]['index'], z7.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[7]['index'], z8.astype(np.float32))
+    interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4.astype(np.float32))
+    print("Multi--- %s seconds ---" % (time.time() - start_time))
+
+    start_time = time.time()
+
+    interpreter_ADD.invoke()
+    print("ADD--- %s seconds ---" % (time.time() - start_time))
+
+
+
 
 """
 output Multilevel
