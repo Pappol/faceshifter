@@ -22,16 +22,22 @@ args = parser.parse_args()
 
 #load data
 img = cv2.imread(args.target_image)
-
+#resize 256
+img = cv2.resize(img, (256, 256))
+#swap rgb to bgr
+img = img.astype(np.float32)
+img = img/255.0
 
 img = np.transpose(img, (2, 0, 1))
 
 img = np.expand_dims(img, axis=0)
-
+print (img.max())
+print (img.min())
 
 
 z_id = np.load(args.z_id_path).astype(np.float32)
-
+print (z_id.max())
+print (z_id.min())
 
 interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=24)
 interpreter.allocate_tensors()
@@ -59,22 +65,28 @@ z4 = interpreter.get_tensor(output_details[5]['index'])
 z5 = interpreter.get_tensor(output_details[6]['index'])
 z7 = interpreter.get_tensor(output_details[7]['index'])
 
-interpreter_ADD.set_tensor(input_details_ADD[0]['index'], z5.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[1]['index'], z_id.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[2]['index'], z6.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[3]['index'], z2.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[4]['index'], z1.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[5]['index'], z3.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[6]['index'], z7.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[7]['index'], z8.astype(np.float32))
-interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4.astype(np.float32))
+print ("z5",z5.max())
+print ("z5",z5.min())
+print ("z6",z6.max())
+print ("z6", z6.min())
+
+interpreter_ADD.set_tensor(input_details_ADD[0]['index'], z5)
+interpreter_ADD.set_tensor(input_details_ADD[1]['index'], z_id)
+interpreter_ADD.set_tensor(input_details_ADD[2]['index'], z6)
+interpreter_ADD.set_tensor(input_details_ADD[3]['index'], z2)
+interpreter_ADD.set_tensor(input_details_ADD[4]['index'], z1)
+interpreter_ADD.set_tensor(input_details_ADD[5]['index'], z3)
+interpreter_ADD.set_tensor(input_details_ADD[6]['index'], z7)
+interpreter_ADD.set_tensor(input_details_ADD[7]['index'], z8)
+interpreter_ADD.set_tensor(input_details_ADD[8]['index'], z4)
 
 interpreter_ADD.invoke()
 
 output_image = interpreter_ADD.get_tensor(output_details_ADD[0]['index'])
 
 opt = np.transpose(output_image[0], (1, 2, 0))
-
+print(opt.min())
+print(opt.max())
 cv2.imshow("Frame", opt)
 cv2.waitKey(0)
 

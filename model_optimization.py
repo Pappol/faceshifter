@@ -12,6 +12,7 @@ from aei_net import AEINet
 from dataset import *
 import os
 import random
+import cv2
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
@@ -24,7 +25,7 @@ parser.add_argument("--images_folder", type=str, default="data/faceshifter-datas
                     help="path of preprocessed source face image"),
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu"),
-parser.add_argument("--num_images", type=int, default=100,
+parser.add_argument("--num_images", type=int, default=50,
                     help="number of images used to convert the model")
 
 args = parser.parse_args()
@@ -32,25 +33,30 @@ args = parser.parse_args()
 
 def optimizeMultiLevelEncoder(argument):
     
-    device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
-    #load model from saved checkpoint
+    #load model 
     converter = tf.lite.TFLiteConverter.from_saved_model(argument.model_path + "MultilevelEncoder")
     converter.optimizations = [tf.lite.Optimize.DEFAULT]
     #setup for data preparation
     def representative_dataset_gen():
         
-        for i in range(argument.num_images):
+        for i in range(1,argument.num_images):
             #choose target image
             target_img_number = (i)
             target_img_path = os.path.join(argument.images_folder, f"{target_img_number:08}.png")
-            
-            target_img = transforms.ToTensor()(Image.open(target_img_path)).unsqueeze(0)
-            yield [(target_img)]
+            #image preparation
+            img = cv2.imread(args.target_img_path)
+            img = img.astype(np.float32)
+            img = img/255.0
+            img = np.transpose(img, (2, 0, 1))
+            img = np.expand_dims(img, axis=0)
+
+            yield [(img)]
+    
     #converter setup
     converter.representative_dataset = representative_dataset_gen
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    converter.inference_input_type = tf.uint8
-    converter.inference_output_type = tf.uint8
+    #converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    #converter.inference_input_type = tf.float32
+    #converter.inference_output_type = tf.float32
     #convert the model
     tflite_quant_model = converter.convert()
     #save the model
@@ -108,11 +114,12 @@ def optizeADD(argument):
                     "input.67": feature_map[3].cpu().numpy(),
                     "input.7": feature_map[0].cpu().numpy(),
                     "input.93": feature_map[4].cpu().numpy()}
+
     #converter setup
     converter.representative_dataset = representative_dataset_gen
-    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    converter.inference_input_type = tf.float32
-    converter.inference_output_type = tf.float32
+    #converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    #converter.inference_input_type = tf.float32
+    #converter.inference_output_type = tf.float32
 
     #convert the model
     tflite_quant_model = converter.convert()
@@ -122,4 +129,4 @@ def optizeADD(argument):
         f.write(tflite_quant_model)
 
 optizeADD(args)
-optimizeMultiLevelEncoder(args)
+#optimizeMultiLevelEncoder(args)

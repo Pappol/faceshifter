@@ -38,7 +38,8 @@ class AEINet(pl.LightningModule):
         z_id = z_id.detach()
 
         feature_map = self.E(target_img)
-
+        for i in feature_map:
+            print(i.max(), i.min())
         output = self.G(z_id, feature_map)
 
         output_z_id = self.Z(F.interpolate(output, size=112, mode='bilinear'))
