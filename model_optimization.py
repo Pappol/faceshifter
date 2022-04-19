@@ -105,7 +105,7 @@ def optizeADD(argument):
 
             feature_map = model.E(target_img)
             #converting to cpu and numpy and prepraring with dictionary signature
-            yield {'input.5': z_id.cpu().numpy(),
+            yield {"input.5": z_id.cpu().numpy(),
                     "input.119": feature_map[5].cpu().numpy(),
                     "input.145": feature_map[6].cpu().numpy(),
                     "input.171": feature_map[7].cpu().numpy(),
