@@ -59,7 +59,7 @@ def lendmarks(image, detector, shape_predictor):
         quad = np.stack([c - x - y, c - x + y, c + x + y, c + x - y])
         qsize = np.hypot(*x) * 2
         
-        image = PIL.fromarray(np.uint8(image))
+        image = Image.fromarray(np.uint8(image))
         image = image.convert('RGB')
 
         # Shrink.
