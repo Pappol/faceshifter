@@ -62,7 +62,7 @@ def lendmarks(image, detector, shape_predictor):
         qsize = np.hypot(*x) * 2
         
         pil_Image = Image.fromarray(image)
-        pil_Image = image.convert('RGB')
+        pil_Image = pil_Image.convert('RGB')
 
         # Shrink.
         shrink = int(np.floor(qsize / output_size * 0.5))
