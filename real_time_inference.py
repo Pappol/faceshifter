@@ -20,6 +20,7 @@ def lendmarks(image, detector, shape_predictor):
     dets = detector(image, 1)
     if len(dets) <= 0:
         print("no face landmark detected")
+        return image
     else:
         shape = shape_predictor(image, dets[0])
         points = np.empty([68, 2], dtype=int)
@@ -112,8 +113,9 @@ def main(args):
 
     while True:
         ret, frame = cap.read()
-        frame = lendmarks(frame, detector, predictor)
-        cv2.imshow('frame', frame)
+        landmarks = lendmarks(frame, detector, predictor)
+        
+        cv2.imshow('frame', landmarks)
         if cv2.waitKey(20) & 0xFF == 27:
             break
 
