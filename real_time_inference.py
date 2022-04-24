@@ -14,6 +14,7 @@ import scipy.ndimage
 from PIL import Image
 
 def lendmarks(image, detector, shape_predictor):
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     output_size = 256
     transform_size=4096
     enable_padding=True
@@ -59,7 +60,7 @@ def lendmarks(image, detector, shape_predictor):
         quad = np.stack([c - x - y, c - x + y, c + x + y, c + x - y])
         qsize = np.hypot(*x) * 2
         
-        image = Image.fromarray(np.uint8(image))
+        image = Image.fromarray(image)
         image = image.convert('RGB')
 
         # Shrink.
