@@ -58,7 +58,8 @@ def lendmarks(image, detector, shape_predictor):
         c = eye_avg + eye_to_mouth * 0.1
         quad = np.stack([c - x - y, c - x + y, c + x + y, c + x - y])
         qsize = np.hypot(*x) * 2
-
+        
+        image = PIL.fromarray(np.uint8(image))
         image = image.convert('RGB')
 
         # Shrink.
