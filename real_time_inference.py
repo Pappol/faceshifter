@@ -92,6 +92,8 @@ def lendmarks(image, detector, shape_predictor):
             blur = qsize * 0.02
             pil_Image += (scipy.ndimage.gaussian_filter(pil_Image, [blur, blur, 0]) - pil_Image) * np.clip(mask * 3.0 + 1.0, 0.0, 1.0)
             pil_Image += (np.median(pil_Image, axis=(0,1)) - pil_Image) * np.clip(mask, 0.0, 1.0)
+            pil_Image = PIL.Image.fromarray(np.uint8(np.clip(np.rint(pil_Image), 0, 255)), 'RGB')
+            quad += pad[:2]
         # Transform.
         pil_Image = pil_Image.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
         if output_size < transform_size:
