@@ -99,7 +99,10 @@ def lendmarks(image, detector, shape_predictor):
         if output_size < transform_size:
             pil_Image = pil_Image.resize((output_size, output_size), PIL.Image.ANTIALIAS)
 
-        return pil_Image
+        open_cv_image = np.array(pil_Image) 
+        # Convert RGB to BGR 
+        open_cv_image = open_cv_image[:, :, ::-1].copy() 
+        return open_cv_image
 
 
 
