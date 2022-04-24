@@ -98,8 +98,7 @@ def lendmarks(image, detector, shape_predictor):
 
 
 def main(args):
-    #load z_id 
-    z_id = np.load(args.z_id_path)
+    
     cap = cv2.VideoCapture(0)
     # Check if the webcam is opened correctly
     if not cap.isOpened():
@@ -111,49 +110,10 @@ def main(args):
     # allow the camera to warmup
     time.sleep(0.1)
 
-    #import tflite multilevel encoder
-    interpreter_MultiLevelEncoder = tflite.  Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite")
-    multi_signature = interpreter_MultiLevelEncoder.get_signature_runner()
-    
-    interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
-
-
-    """
-    input_index = interpreter_MultiLevelEncoder.get_input_details()[0]["input"]
-    
-    output_index = interpreter_MultiLevelEncoder.get_output_details()[0]["index"]
-
-    #import tflite ADD 
-    interpreter_ADD = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite")
-    input_index_ADD = interpreter_ADD.get_input_details()[0]["index"]
-    output_index_ADD = interpreter_ADD.get_output_details()[0]["index"]
-
-    """
-    
-
     while True:
         ret, frame = cap.read()
         frame = lendmarks(frame, detector, predictor)
-        interpreter_MultiLevelEncoder.set_tensor(input_index, frame)
-        interpreter_MultiLevelEncoder.invoke()
-        feature_map = interpreter_MultiLevelEncoder.get_tensor(output_index)
-        
-        input_ADD_format = {'input.5': z_id.cpu().numpy(),
-                    "input.119": feature_map[5].cpu().numpy(),
-                    "input.145": feature_map[6].cpu().numpy(),
-                    "input.171": feature_map[7].cpu().numpy(),
-                    "input.27": feature_map[1].cpu().numpy(),
-                    "input.47": feature_map[2].cpu().numpy(),
-                    "input.67": feature_map[3].cpu().numpy(),
-                    "input.7": feature_map[0].cpu().numpy(),
-                    "input.93": feature_map[4].cpu().numpy()}
-        interpreter_ADD.set_tensor(input_index_ADD, input_ADD_format)
-
-
-        interpreter_ADD.invoke()
-        output_ADD = interpreter_ADD.get_tensor(output_index_ADD)
-
-        cv2.imshow("Frame", output_ADD)
+        cv2.imshow('frame', frame)
         if cv2.waitKey(20) & 0xFF == 27:
             break
 

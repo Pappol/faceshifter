@@ -102,8 +102,10 @@ def test_add(args, model, device):
     z6 = feature_map[5].detach().cpu().numpy()
     z7 = feature_map[6].detach().cpu().numpy()
     z8 = feature_map[7].detach().cpu().numpy()
-
-
+    
+    print ("zid")
+    print (z_id)
+    print (z_id.cpu().numpy())
 
     interpreter.set_tensor(input_details[0]['index'], z5)
     interpreter.set_tensor(input_details[1]['index'], z_id.cpu().detach().numpy())
@@ -116,27 +118,14 @@ def test_add(args, model, device):
     interpreter.set_tensor(input_details[8]['index'], z4)
     interpreter.invoke()
 
+    for i in input_details:
+        print(i["shape"])
+
     output_data = interpreter.get_tensor(output_details[0]['index'])
-    print(output_data[0].min())
-    print(output_data[0].max())
+
     opt = np.transpose(output_data[0], (1, 2, 0))
     print(opt.min())
     print(opt.max())
-    cv2.imshow("Frame", opt)
-    cv2.waitKey(0)
-
-    """
-    output_data = output_data.reshape(1, 1, 256, 256)
-    output_data = torch.from_numpy(output_data).to(device)
-    output_data = F.interpolate(output_data, size=112, mode='bilinear')
-    output_data = F.normalize(output_data)
-    output_data = output_data.detach()
-    output_data = output_data.cpu()
-    output_data = output_data.numpy()
-    output_data = output_data.reshape(256, 256)
-    output_data = Image.fromarray(output_data)
-    output_data.save(args.output_image)
-    """
 
 
 
@@ -153,7 +142,7 @@ def main(args):
     model.freeze()
     model.to(device)
 
-    test_multi_level_encoder(args, model, device)
+    test_add(args, model, device)
 
 
 if __name__ == "__main__":
