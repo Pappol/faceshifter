@@ -16,7 +16,7 @@ from PIL import Image
 def lendmarks(image, detector, shape_predictor):
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     output_size = 256
-    transform_size=4096
+    transform_size=256
     enable_padding=True
     dets = detector(image, 1)
 
@@ -103,9 +103,10 @@ def lendmarks(image, detector, shape_predictor):
         pil_Image = pil_Image.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
         if output_size < transform_size:
             pil_Image = pil_Image.resize((output_size, output_size), PIL.Image.ANTIALIAS)
+
         print("transform--- %s seconds ---" % (time.time() - start_time))
         open_cv_image = np.array(pil_Image)
-        
+
         start_time = time.time()
         # Convert RGB to BGR 
         open_cv_image = open_cv_image[:, :, ::-1].copy() 
