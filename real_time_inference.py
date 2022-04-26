@@ -103,11 +103,13 @@ def lendmarks(image, detector, shape_predictor):
         pil_Image = pil_Image.transform((transform_size, transform_size), PIL.Image.QUAD, (quad + 0.5).flatten(), PIL.Image.BILINEAR)
         if output_size < transform_size:
             pil_Image = pil_Image.resize((output_size, output_size), PIL.Image.ANTIALIAS)
-
-        open_cv_image = np.array(pil_Image) 
+        print("transform--- %s seconds ---" % (time.time() - start_time))
+        open_cv_image = np.array(pil_Image)
+        
+        start_time = time.time()
         # Convert RGB to BGR 
         open_cv_image = open_cv_image[:, :, ::-1].copy() 
-        print("transform and convert--- %s seconds ---" % (time.time() - start_time))
+        print("convert--- %s seconds ---" % (time.time() - start_time))
         return open_cv_image
 
 
