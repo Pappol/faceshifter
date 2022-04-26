@@ -12,7 +12,7 @@ if not cap.isOpened():
 
 ret, frame = cap.read()
 height, width, layers = frame.shape
-
+fps = 30
 
 p = "preprocess/shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
