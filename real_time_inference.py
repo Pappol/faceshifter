@@ -22,7 +22,7 @@ def lendmarks(image, detector, shape_predictor):
     if len(dets) <= 0:
         print("no face landmark detected")
         image = cv2.cvtColor(image, cv2.COLOR_RGB2BGR)
-        image = image.resize((output_size, output_size), PIL.Image.ANTIALIAS)
+        image = cv2.resize(image, (output_size, output_size))
         return image
     else:
         shape = shape_predictor(image, dets[0])
