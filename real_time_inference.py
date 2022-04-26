@@ -116,15 +116,24 @@ def main(args):
     detector = dlib.get_frontal_face_detector()
     predictor = dlib.shape_predictor(args.shape_predictor)
 
+
+    output_file = "/home/pi/Desktop/tirocinio/Video.mp4"
+    ret, frame = cap.read()
+    height, width, layers = frame.shape
+    fps = frame.get(cv2.CAP_PROP_FPS)
+    fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
+    writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
+
     # allow the camera to warmup
     time.sleep(0.1)
 
     while True:
         ret, frame = cap.read()
         landmarks = lendmarks(frame, detector, predictor)
-        
+        writer.write(landmarks)
         cv2.imshow('frame', landmarks)
         if cv2.waitKey(20) & 0xFF == 27:
+            writer.release()
             break
 
 
