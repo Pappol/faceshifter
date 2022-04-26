@@ -120,7 +120,7 @@ def main(args):
     output_file = "/home/pi/Desktop/tirocinio/Video.mp4"
     ret, frame = cap.read()
     height, width, layers = frame.shape
-    fps = frame.get(cv2.CAP_PROP_FPS)
+    fps = 30
     fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
     writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
 
