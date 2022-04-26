@@ -12,7 +12,7 @@ if not cap.isOpened():
 
 ret, frame = cap.read()
 height, width, layers = frame.shape
-fps = frame.get(cv2.CAP_PROP_FPS)
+fps = 30
 
 
 p = "shape_predictor_68_face_landmarks.dat"
