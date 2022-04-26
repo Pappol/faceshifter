@@ -130,7 +130,9 @@ def main(args):
 
     while True:
         ret, frame = cap.read()
+        start_time = time.time()
         landmarks = lendmarks(frame, detector, predictor)
+        print("lendmarks--- %s seconds ---" % (time.time() - start_time))
         cv2.imshow('frame', landmarks)
         if cv2.waitKey(20) & 0xFF == 27:
             break
