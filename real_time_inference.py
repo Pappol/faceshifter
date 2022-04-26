@@ -14,11 +14,13 @@ import scipy.ndimage
 from PIL import Image
 
 def lendmarks(image, detector, shape_predictor):
+    start_time = time.time()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     output_size = 256
     transform_size=256
     enable_padding=True
     dets = detector(image, 1)
+    print("loading--- %s seconds ---" % (time.time() - start_time))
 
     if len(dets) <= 0:
         print("no face landmark detected")
@@ -26,6 +28,7 @@ def lendmarks(image, detector, shape_predictor):
         #image = cv2.resize(image, (output_size, output_size))
         return image
     else:
+        start_time = time.time()
         shape = shape_predictor(image, dets[0])
         points = np.empty([68, 2], dtype=int)
         for b in range(68):
@@ -36,7 +39,7 @@ def lendmarks(image, detector, shape_predictor):
         lm_eye_left      = lm[36 : 42]  # left-clockwise
         lm_eye_right     = lm[42 : 48]  # left-clockwise
         lm_mouth_outer   = lm[48 : 60]  # left-clockwise
-
+        print("lendmarks--- %s seconds ---" % (time.time() - start_time))
         start_time = time.time()
         # Calculate auxiliary vectors.
         eye_left     = np.mean(lm_eye_left, axis=0)
@@ -130,9 +133,7 @@ def main(args):
 
     while True:
         ret, frame = cap.read()
-        start_time = time.time()
         landmarks = lendmarks(frame, detector, predictor)
-        print("lendmarks--- %s seconds ---" % (time.time() - start_time))
         cv2.imshow('frame', landmarks)
         if cv2.waitKey(20) & 0xFF == 27:
             break
