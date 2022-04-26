@@ -12,18 +12,15 @@ if not cap.isOpened():
 
 ret, frame = cap.read()
 height, width, layers = frame.shape
-fps = frame.get(cv2.CAP_PROP_FPS)
 
 
-p = "shape_predictor_68_face_landmarks.dat"
+p = "preprocess/shape_predictor_68_face_landmarks.dat"
 detector = dlib.get_frontal_face_detector()
 predictor = dlib.shape_predictor(p)
 
 # allow the camera to warmup
 time.sleep(0.1)
 
-fourcc = cv2.VideoWriter_fourcc("m", "p", "4", "v")
-writer = cv2.VideoWriter(output_file, fourcc, fps, (width, height))
 
 
 # capture frames from the camera
@@ -44,8 +41,6 @@ while True:
         for (x, y) in shape:
             cv2.circle(frame, (x, y), 2, (0, 255, 0), -1)
 
-    writer.write(frame)
     cv2.imshow("Frame", frame)
     if cv2.waitKey(20) & 0xFF == 27:
-        writer.release()
         break
