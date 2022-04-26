@@ -1,107 +1,82 @@
-# FaceShifter &mdash; Unofficial PyTorch Implementation
-![](./assets/teaser_v8.jpg)
-![](./assets/deepfake_method_stage1_v8.png)
+# Migrating Face Swap to Mobile Devices: A lightweight Framework and A Supervised Training Solution
 
-Raspberrypi  Implementation of [FaceShifter: Towards High Fidelity And Occlusion Aware Face Swapping](https://arxiv.org/abs/1912.13457) with [Pytorch-Lightning](https://github.com/PyTorchLightning/pytorch-lightning).
-In the paper, there are two networks for full pipe-line, AEI-Net and HEAR-Net. We only implement the AEI-Net, which is main network for face swapping.
+### Introduction
 
-## Datasets
+This is the repository for the source code of the papar \
+*Migrating Face Swap to Mobile Devices: A lightweight Framework and A Supervised Training Solution*
 
-### Preparing Data
+Accepted to IEEE International Conference on Multimedia and Expo 2022
 
+[[ICME 2022](http://2022.ieeeicme.org/)] [[arXiv](https://arxiv.org/abs/2204.08339)]
 
-### Preprocess Data
+### Framework overview
 
-## Training
-### Configuration
-There is `yaml` file in the [`config`](./config) folder.
-They **must** be edited to match your training requirements (dataset, metadata, etc.).
+![Selected results](./modules/Framework.png)
 
-- [`config/train.yaml`](./config/train.yaml): Configs for training AEI-Net.
-  - Fill in the blanks of: `dataset_dir`, `valset_dir`
-  - You may want to change: `batch_size` for GPUs other than 32GB V100, or `chkpt_dir` to save checkpoints in other disk.
-  
-### Using Docker
-We provide a Dockerfile for easier training environment setup.
-```bash
-docker build -t faceshifter:0.0 .
-docker run -itd --ipc host --gpus all -v /PATH_TO_THIS_FOLDER:/workspace -v /PATH_TO_DATASET:/DATA --name FS --tag faceshifter:0.0
-docker attach FS
+### Preferable configurations
+
+torch==1.6.0
+
+torchvision==0.7.0
+
+cuda version: 10.2
+
+### How to use the code
+
+Firstly, I strongly recommend implementing your own `dataset` class for loading training data, since my implemenation is based the structure of my `data` folder. 
 ```
+class FaceShifterDataset(torch.utils.data.TensorDataset):
+    def __init__(self):
+        super(FaceShifterDataset, self).__init__()
+        # TODO: add your code
 
-### Docker real time inference
-We provide a Dockerfile for easier inference environment setup.
-```bash
-docker build -t inference:0.0 .
-docker run -itd --ipc host --gpus all -v /PATH_TO_THIS_FOLDER:/workspace -v /PATH_TO_DATASET:/DATA --name inf --tag inference:0.0
-docker attach inf
+    def __getitem__(self, item):
+        # TODO: add your code
+        return Xs, Xt, GT, with_gt, src_as_true
+
+    def __len__(self):
+        # TODO: add your code
+        return len(self.data_list)
 ```
+Basically, the `__getitem__` function returns five elements:
+* `Xs`: the source image.
+* `Xt`: the target image.
+* `GT`: the ground truth image. If none, an equivalent tensor with all values being -1. 
+* `with_gt`: (`torch.float32`) whether the training data has a ground truth label (the value can be either `1` or `0`).
+* `src_as_true`: (`bool`) used to indicate whether the source or the target is a real image. Selected real images are used to feed the discrimiator.
 
-### Pre-trained Arcface
-During the training process, pre-trained [Arcface](https://openaccess.thecvf.com/content_CVPR_2019/html/Deng_ArcFace_Additive_Angular_Margin_Loss_for_Deep_Face_Recognition_CVPR_2019_paper.html)
-is required. We provide our pre-trained Arcface model; you can download at [this](https://drive.google.com/file/d/1TAb6WNfusbL2Iv3tfRCpMXimZE9tnSUn/view?usp=sharing) link
+Note that images are with shape being (3, 256, 256) and values in (-1, 1). Images are in format `torch.tensor` with `dtype` being `torch.float32`.
 
-### Command
-To train the AEI-Net, run this command:
+After that, reset the arugments inside `main.py` and refer to `run_training.sh`. Note that my implementation uses `DistributedDataParallel` on 4 GPUs within one machine. Please adjust the settings based on your own hardware. 
 
-```bash
-python aei_trainer.py -c <path_to_config_yaml> -g <gpus> -n <run_name>
-# example command that might help you understand the arguments:
-# train from scratch with name "my_runname"
-python aei_trainer.py -c config/train.yaml -g 0 -n my_runname
+### Performance
+
+##### Qualitative performance
+
+![](./modules/Performance.png)
+
+
+##### Comparisons of model size
+
+| Model                 | Model Size (MB)      |
+|-----------------------|----------------------|
+| FaceShifter (PyTorch) | 669.0 + 64.0 + 168.0 |
+| MegaFS (PyTorch)      | 3529.0 + 364.0       |
+| SimSwap (PyTorch)     | 766.9 + 220.2        |
+| Ours (Pytorch)        | 10.2 + 4.9           |
+| Ours (CoreML)         | 15.0                 |
+| Ours (TNN)            | 14.8                 |
+
+### Citation
+
+If you find my work useful, please cite:
+
 ```
-
-Optionally, you can resume the training from previously saved checkpoint by adding `-p <checkpoint_path>` argument.
-
-### Monitoring via Tensorboard
-
-The progress of training with loss values and validation output can be monitored with Tensorboard.
-By default, the logs will be stored at `log`, which can be modified by editing `log.log_dir` parameter at config yaml file.
-
-```bash
-tensorboard --log_dir log --bind_all # Scalars, Images, Hparams, Projector will be shown.
-```
-
-## Inference
-To inference the AEI-Net, run this command:
-```bash
-python aei_inference.py --checkpoint_path <path_to_pre_trained_file> --target_image <path_to_target_image_file> --source_image <path_to_source_image_file> --output_path <path_to_output_image_file> --gpu_num <number of gpu>
-# example command that might help you understand the arguments:
-# train from scratch with name "my_runname"
-python aei_inference.py --checkpoint_path chkpt/my_runname/epoch=0.ckpt --target_image target.png --source_image source.png --output_path output.png --gpu_num 0
-```
-
-We probived [colab example](https://colab.research.google.com/drive/1M99jX_nhZ74j_jdYIDtTvDKEE-XVoQnn?usp=sharing). You can use it with your own trained weight. 
-
-## Results
-
-![](assets/jobs2cook.gif)
-
-### Comparison with results from original paper
-#### Figure in the original paper
-![](assets/wild_v6.jpg)
-#### Our Results
-![](assets/our_results.png)
-
-Reminds you that we __only implement the AEI-Net,__ and the results in the original paper were generated by AEI-Net and HEAR-Net.
-
-We will soon release the FaceShifter in our cloud API service, [maum.ai](https://maum.ai/?lang=en)
-
-## License
-
-[BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause).
-
-## Implementation Author
-
-Changho Choi @ MINDs Lab, Inc. (changho@mindslab.ai)
-
-## Paper Information
-
-```bibtex
-@article{li2019faceshifter,
-  title={Faceshifter: Towards high fidelity and occlusion aware face swapping},
-  author={Li, Lingzhi and Bao, Jianmin and Yang, Hao and Chen, Dong and Wen, Fang},
-  journal={arXiv preprint arXiv:1912.13457},
-  year={2019}
+@article{mobilefsgan,
+author = {Haiming Yu and Hao Zhu and Xiangju Lu and Junhui Liu},
+title = {Migrating Face Swap to Mobile Devices: A lightweight Framework and A Supervised Training Solution},
+journal = {in ICME}, 
+year = 2022
 }
 ```
+
