@@ -14,13 +14,13 @@ import scipy.ndimage
 from PIL import Image
 
 def lendmarks(image, detector, shape_predictor):
-    start_time = time.time()
     image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
     output_size = 256
     transform_size=256
     enable_padding=True
+    start_time = time.time()
     dets = detector(image, 1)
-    print("loading--- %s seconds ---" % (time.time() - start_time))
+    print("det--- %s seconds ---" % (time.time() - start_time))
 
     if len(dets) <= 0:
         print("no face landmark detected")
