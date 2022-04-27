@@ -141,26 +141,34 @@ def compare_models(args, model, device):
 
     img = np.expand_dims(img, axis=0)
 
-    interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=12)
-    interpreter.allocate_tensors()
-    input_details = interpreter.get_input_details()
-    output_details = interpreter.get_output_details()
+    interpreter_M = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=12)
+    interpreter_M.allocate_tensors()
+    input_details = interpreter_M.get_input_details()
+    output_details = interpreter_M.get_output_details()
 
-    interpreter.set_tensor(input_details[0]['index'], img)
+    interpreter_M.set_tensor(input_details[0]['index'], img)
 
-    interpreter.invoke()
-    z = [interpreter.get_tensor(output_details[1]['index']), interpreter.get_tensor(output_details[0]['index']), interpreter.get_tensor(output_details[3]['index']),
-         interpreter.get_tensor(output_details[5]['index']), interpreter.get_tensor(output_details[6]['index']), interpreter.get_tensor(output_details[4]['index']),
-         interpreter.get_tensor(output_details[7]['index']), interpreter.get_tensor(output_details[2]['index'])]
+    interpreter_M.invoke()
+    z = [interpreter_M.get_tensor(output_details[1]['index']), interpreter_M.get_tensor(output_details[0]['index']), interpreter_M.get_tensor(output_details[3]['index']),
+         interpreter_M.get_tensor(output_details[5]['index']), interpreter_M.get_tensor(output_details[6]['index']), interpreter_M.get_tensor(output_details[4]['index']),
+         interpreter_M.get_tensor(output_details[7]['index']), interpreter_M.get_tensor(output_details[2]['index'])]
 
     # use data in the model to generate the image
     source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
     z_id = model.Z(F.interpolate(source_img, size=112, mode='bilinear'))
     z_id = F.normalize(z_id)
     z_id = z_id.detach()
+
     #run the model
-    with torch.no_grad():
-        out = model.G(z_id, z)
+    target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
+
+    feature_map = model.E(target_img)
+    feature_map = [torch.from_numpy(z[0]).to(device), torch.from_numpy(z[1]).to(device), torch.from_numpy(z[2]).to(device), 
+                    torch.from_numpy(z[3]).to(device), torch.from_numpy(z[4]).to(device), torch.from_numpy(z[5]).to(device), 
+                    torch.from_numpy(z[6]).to(device),torch.from_numpy(z[7]).to(device)]
+
+
+    out = model.G(z_id, feature_map)
     out = transforms.ToPILImage()(out.cpu().squeeze().clamp(0, 1))
     
     #load add tflite model
@@ -168,26 +176,38 @@ def compare_models(args, model, device):
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
+    counter = 0
+    for i in input_details:
+        print(counter)
+        print(i["shape"])
+        counter += 1
 
-    interpreter.set_tensor(input_details[0]['index'], z[5])
+    counter = 0
+
+    print ("SPACEr")
+
+    for i in z:
+        print(counter)
+        print(i.shape)
+        counter += 1
+    
+    interpreter.set_tensor(input_details[0]['index'], z[4])
     interpreter.set_tensor(input_details[1]['index'], z_id.cpu().detach().numpy())
-    interpreter.set_tensor(input_details[2]['index'], z[6])
-    interpreter.set_tensor(input_details[3]['index'], z[2])
-    interpreter.set_tensor(input_details[4]['index'], z[1])
-    interpreter.set_tensor(input_details[5]['index'], z[3])
-    interpreter.set_tensor(input_details[6]['index'], z[7])
-    interpreter.set_tensor(input_details[7]['index'], z[8])
-    interpreter.set_tensor(input_details[8]['index'], z[4])
+    interpreter.set_tensor(input_details[2]['index'], z[5])
+    interpreter.set_tensor(input_details[3]['index'], z[1])
+    interpreter.set_tensor(input_details[4]['index'], z[0])
+    interpreter.set_tensor(input_details[5]['index'], z[2])
+    interpreter.set_tensor(input_details[6]['index'], z[6])
+    interpreter.set_tensor(input_details[7]['index'], z[7])
+    interpreter.set_tensor(input_details[8]['index'], z[3])
     interpreter.invoke()
 
     output_data = interpreter.get_tensor(output_details[0]['index'])
-
+    
     opt = np.transpose(output_data[0], (1, 2, 0))
 
-    out.show()
-    cv2.imshow("opt", opt)
-    cv2.waitKey(0)
-
+    out.save(args.output_path)
+    opt.save(args.output_path_opt)
 
 def main(args):
     #load model
@@ -222,6 +242,8 @@ if __name__ == "__main__":
                     help="path of aei-net pre-trained file"),
     parser.add_argument("--output_path", type=str, default="output.jpg",
                     help="path to the output image"),
+    parser.add_argument("--output_path_opt", type=str, default="output_opt.jpg",
+                    help="path to the output image")
 
     args = parser.parse_args()
 
