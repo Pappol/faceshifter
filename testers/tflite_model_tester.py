@@ -15,7 +15,6 @@ from torch.optim import Adam
 from torch.utils.data import DataLoader
 
 import torchvision
-from torchvision.models import resnet101
 import pytorch_lightning as pl
 from PIL import Image
 
