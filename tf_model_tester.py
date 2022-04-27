@@ -183,7 +183,11 @@ def compare_models(args, model, device):
     output_data = interpreter.get_tensor(output_details[0]['index'])
 
     opt = np.transpose(output_data[0], (1, 2, 0))
-    
+
+    out.show()
+    cv2.imshow("opt", opt)
+    cv2.waitKey(0)
+
 
 def main(args):
     #load model
@@ -195,7 +199,7 @@ def main(args):
     model.freeze()
     model.to(device)
 
-    test_add(args, model, device)
+    compare_models(args, model, device)
 
 
 if __name__ == "__main__":
