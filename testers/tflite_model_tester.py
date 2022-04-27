@@ -208,21 +208,21 @@ def main(args):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
+    parser.add_argument("-c", "--config", type=str, default="../config/train.yaml",
                             help="path of configuration yaml file"),
     parser.add_argument("--model_path", type=str, default="ONNX/",
                             help="path of onnx extra data folder"),
-    parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_predictor_68_face_landmarks.dat",
+    parser.add_argument("--shape_predictor", type=str, default="../preprocess/shape_predictor_68_face_landmarks.dat",
                             help="path of z_id tensor")
-    parser.add_argument("--z_id_path", type=str, default="preprocess/z_id.npy",
+    parser.add_argument("--z_id_path", type=str, default="../preprocess/z_id.npy",
                             help="path of z_id tensor"),
-    parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000003.png",
+    parser.add_argument("--target_image", type=str, default="../data/faceshifter-datasets-preprocessed/train/00000003.png",
                             help="path of preprocessed target face image"),
-    parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
+    parser.add_argument("--source_image", type=str, default="../data/faceshifter-datasets-preprocessed/train/00000002.png",
                             help="path of preprocessed source face image"),
     parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu"),
-    parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
+    parser.add_argument("--checkpoint_path", type=str, default="../chkpt/30.ckpt",
                     help="path of aei-net pre-trained file"),
     parser.add_argument("--output_path", type=str, default="output.jpg",
                     help="path to the output image"),

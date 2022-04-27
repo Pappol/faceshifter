@@ -11,15 +11,15 @@ from aei_net import AEINet
 from dataset import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
+parser.add_argument("-c", "--config", type=str, default="../config/train.yaml",
                     help="path of configuration yaml file")
-parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
+parser.add_argument("--checkpoint_path", type=str, default="../chkpt/30.ckpt",
                     help="path of aei-net pre-trained file")
-parser.add_argument("--output_path", type=str, default="ONNX/single/",
+parser.add_argument("--output_path", type=str, default="../ONNX/single/",
                     help="path of output onnx"),
-parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000001.png",
+parser.add_argument("--target_image", type=str, default="../data/faceshifter-datasets-preprocessed/train/00000001.png",
                     help="path of preprocessed target face image")
-parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
+parser.add_argument("--source_image", type=str, default="../data/faceshifter-datasets-preprocessed/train/00000002.png",
                     help="path of preprocessed source face image")
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu")
