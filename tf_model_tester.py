@@ -160,9 +160,7 @@ def compare_models(args, model, device):
     z_id = z_id.detach()
 
     #run the model
-    target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
 
-    feature_map = model.E(target_img)
     feature_map = [torch.from_numpy(z[0]).to(device), torch.from_numpy(z[1]).to(device), torch.from_numpy(z[2]).to(device), 
                     torch.from_numpy(z[3]).to(device), torch.from_numpy(z[4]).to(device), torch.from_numpy(z[5]).to(device), 
                     torch.from_numpy(z[6]).to(device),torch.from_numpy(z[7]).to(device)]
@@ -176,20 +174,6 @@ def compare_models(args, model, device):
     interpreter.allocate_tensors()
     input_details = interpreter.get_input_details()
     output_details = interpreter.get_output_details()
-    counter = 0
-    for i in input_details:
-        print(counter)
-        print(i["shape"])
-        counter += 1
-
-    counter = 0
-
-    print ("SPACEr")
-
-    for i in z:
-        print(counter)
-        print(i.shape)
-        counter += 1
     
     interpreter.set_tensor(input_details[0]['index'], z[4])
     interpreter.set_tensor(input_details[1]['index'], z_id.cpu().detach().numpy())
@@ -203,10 +187,11 @@ def compare_models(args, model, device):
     interpreter.invoke()
 
     output_data = interpreter.get_tensor(output_details[0]['index'])
-    
+
     opt = np.transpose(output_data[0], (1, 2, 0))
 
     out.save(args.output_path)
+    opt = Image.fromarray(opt.astype(np.uint8))
     opt.save(args.output_path_opt)
 
 def main(args):
