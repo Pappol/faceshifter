@@ -127,10 +127,63 @@ def test_add(args, model, device):
     print(opt.min())
     print(opt.max())
 
+#function that compares the optimized model and the original model
+def compare_models(args, model, device):
+    #load data
+    img = cv2.imread(args.target_image)
+    #resize 256
+    img = cv2.resize(img, (256, 256))
+    #swap rgb to bgr
+    img = img.astype(np.float32)
+    img = img/255.0
 
+    img = np.transpose(img, (2, 0, 1))
 
+    img = np.expand_dims(img, axis=0)
 
+    interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=12)
+    interpreter.allocate_tensors()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
 
+    interpreter.set_tensor(input_details[0]['index'], img)
+
+    interpreter.invoke()
+    z = [interpreter.get_tensor(output_details[1]['index']), interpreter.get_tensor(output_details[0]['index']), interpreter.get_tensor(output_details[3]['index']),
+         interpreter.get_tensor(output_details[5]['index']), interpreter.get_tensor(output_details[6]['index']), interpreter.get_tensor(output_details[4]['index']),
+         interpreter.get_tensor(output_details[7]['index']), interpreter.get_tensor(output_details[2]['index'])]
+
+    # use data in the model to generate the image
+    source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
+    z_id = model.Z(F.interpolate(source_img, size=112, mode='bilinear'))
+    z_id = F.normalize(z_id)
+    z_id = z_id.detach()
+    #run the model
+    with torch.no_grad():
+        out = model.G(z_id, z)
+    out = transforms.ToPILImage()(out.cpu().squeeze().clamp(0, 1))
+    
+    #load add tflite model
+    interpreter = tflite.Interpreter(args.model_path+ "ADD_gen_Lite_optimized.tflite", num_threads=12)
+    interpreter.allocate_tensors()
+    input_details = interpreter.get_input_details()
+    output_details = interpreter.get_output_details()
+
+    interpreter.set_tensor(input_details[0]['index'], z[5])
+    interpreter.set_tensor(input_details[1]['index'], z_id.cpu().detach().numpy())
+    interpreter.set_tensor(input_details[2]['index'], z[6])
+    interpreter.set_tensor(input_details[3]['index'], z[2])
+    interpreter.set_tensor(input_details[4]['index'], z[1])
+    interpreter.set_tensor(input_details[5]['index'], z[3])
+    interpreter.set_tensor(input_details[6]['index'], z[7])
+    interpreter.set_tensor(input_details[7]['index'], z[8])
+    interpreter.set_tensor(input_details[8]['index'], z[4])
+    interpreter.invoke()
+
+    output_data = interpreter.get_tensor(output_details[0]['index'])
+
+    opt = np.transpose(output_data[0], (1, 2, 0))
+    
 
 def main(args):
     #load model
