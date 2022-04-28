@@ -175,23 +175,23 @@ def main(config, checkpoint_path, output_path, target_image, source_image, gpu_n
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-c", "--config", type=str, default="../config/train.yaml",
+    parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
                         help="path of configuration yaml file")
-    parser.add_argument("--checkpoint_path", type=str, default="../chkpt/30.ckpt",
+    parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
                         help="path of aei-net pre-trained file")
-    parser.add_argument("--onnx_out_path", type=str, default="../ONNX/single/",
+    parser.add_argument("--onnx_out_path", type=str, default="ONNX/single/",
                         help="path of output onnx"),
-    parser.add_argument("--tf_out_path", type=str, default="../TF/single/",
+    parser.add_argument("--tf_out_path", type=str, default="TF/single/",
                         help="path of output tf"),
-    parser.add_argument("--target_image", type=str, default="../data/faceshifter-datasets-preprocessed/train/00000001.png",
+    parser.add_argument("--target_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000001.png",
                         help="path of preprocessed target face image"),
-    parser.add_argument("--source_image", type=str, default="../data/faceshifter-datasets-preprocessed/train/00000002.png",
+    parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000002.png",
                         help="path of preprocessed source face image"),
     parser.add_argument("--gpu_num", type=int, default=0,
                         help="number of gpu"),
     parser.add_argument("--num_images", type=int, default=100,
                     help="number of images used to convert the model"),
-    parser.add_argument("--images_folder", type=str, default="../data/faceshifter-datasets-preprocessed/train/",
+    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
                     help="path of preprocessed source face image"),
     args = parser.parse_args()
 
