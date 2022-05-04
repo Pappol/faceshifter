@@ -45,7 +45,7 @@ if __name__ == "__main__":
                         help="path of aei-net pre-trained file"),
     parser.add_argument("--gpu_num", type=int, default=0,
                         help="number of gpu"),
-    parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000003.png",
+    parser.add_argument("--source_image", type=str, default="data/faceshifter-datasets-preprocessed/train/00000056.png",
                     help="path of preprocessed source face image"),
     parser.add_argument("--save_path", type=str, default="preprocess/z_id.npy",
                         help="path of z_id tensor")

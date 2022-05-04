@@ -1,4 +1,5 @@
 import argparse
+from tabnanny import verbose
 from PIL import Image
 from omegaconf import OmegaConf
 import torch.onnx
@@ -45,11 +46,16 @@ z_id = F.normalize(z_id)
 z_id = z_id.detach()
 
 feature_map = model.E(target_img)
+input_name_MLE = ["target"]
+output_names_MLE = [ "z_%d" % i for i in range(1, 8) ]
+input_names_ADD = [ "z_id" ] + [ "z_%d" % i for i in range(1, 9) ]
+output_names_ADD = [ "output"]
 
-
-torch.onnx.export(model.G,(z_id, feature_map), args.output_path + "ADD_gen.onnx", 
-                    export_params=True,opset_version=11)
+torch.onnx.export(model.G,(z_id, feature_map), args.output_path + "ADD_gen.onnx",
+                    export_params=True,opset_version=11, verbose=True,
+                    input_names=input_names_ADD, output_names=output_names_ADD)
 
 torch.onnx.export(model.E,(target_img), args.output_path + "MultilevelEncoder.onnx", 
-                    export_params=True,opset_version=11)
+                    export_params=True,opset_version=11, verbose=True,
+                    input_names=input_name_MLE, output_names=output_names_MLE)
 
