@@ -11,25 +11,7 @@ import torch.nn.functional as F
 from aei_net import AEINet
 from dataset import *
 import os
-import random
 import cv2
-
-
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
-                    help="path of configuration yaml file"),
-parser.add_argument("--model_path", type=str, default="ONNX/",
-                    help="path of onnx extra data folder"),
-parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
-                    help="path of aei-net pre-trained file"),
-parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
-                    help="path of preprocessed source face image"),
-parser.add_argument("--gpu_num", type=int, default=0,
-                    help="number of gpu"),
-parser.add_argument("--num_images", type=int, default=50,
-                    help="number of images used to convert the model")
-
-args = parser.parse_args()
 
 
 def optimizeMultiLevelEncoder(argument):
@@ -129,5 +111,26 @@ def optizeADD(argument):
     with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
         f.write(tflite_quant_model)
 
-optizeADD(args)
-optimizeMultiLevelEncoder(args)
+def main(args):
+    optizeADD(args)
+    optimizeMultiLevelEncoder(args)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
+                        help="path of configuration yaml file"),
+    parser.add_argument("--model_path", type=str, default="ONNX/",
+                        help="path of onnx extra data folder"),
+    parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
+                        help="path of aei-net pre-trained file"),
+    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
+                        help="path of preprocessed source face image"),
+    parser.add_argument("--gpu_num", type=int, default=0,
+                        help="number of gpu"),
+    parser.add_argument("--num_images", type=int, default=50,
+                        help="number of images used to convert the model")
+
+    args = parser.parse_args()
+
+    main(args)

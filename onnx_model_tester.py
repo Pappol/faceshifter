@@ -46,10 +46,6 @@ def old_test(args):
     print (image.shape)
     np.save(args.save_path, image)
 
-def main(args):
-
-    test_py_onnx(args)
-
 
 #test pytorch model with onnx
 def test_py_onnx(args):
@@ -86,7 +82,6 @@ def test_py_onnx(args):
         feature_map.append(torch.from_numpy(i))
 
     for i in feature_map:
-        i.to(device)
         print (i.type())
         print (i.shape)
 
@@ -110,6 +105,12 @@ input.145
 input.171
 
 """
+
+def main(args):
+
+    test_py_onnx(args)
+
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
