@@ -4,36 +4,36 @@ import torch.nn as nn
 class MultilevelAttributesEncoder(nn.Module):
     def __init__(self):
         super(MultilevelAttributesEncoder, self).__init__()
-        self.Encoder_channel = [3, 32, 64, 128, 256, 512, 1024, 1024]
+        self.Encoder_channel = [3, 32, 64, 128, 256, 512, 1024]
         self.Encoder = nn.ModuleDict({f'layer_{i}' : nn.Sequential(
                 nn.Conv2d(self.Encoder_channel[i], self.Encoder_channel[i+1], kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(self.Encoder_channel[i+1]),
                 nn.LeakyReLU(0.1)
-            )for i in range(7)})
+            )for i in range(6)})
 
-        self.Decoder_inchannel = [1024, 2048, 1024, 512, 256, 128]
-        self.Decoder_outchannel = [1024, 512, 256, 128, 64, 32]
+        self.Decoder_inchannel = [1024, 1024, 512, 256, 128]
+        self.Decoder_outchannel = [512, 256, 128, 64, 32]
         self.Decoder = nn.ModuleDict({f'layer_{i}' : nn.Sequential(
                 nn.ConvTranspose2d(self.Decoder_inchannel[i], self.Decoder_outchannel[i], kernel_size=4, stride=2, padding=1),
                 nn.BatchNorm2d(self.Decoder_outchannel[i]),
                 nn.LeakyReLU(0.1)
-            )for i in range(6)})
+            )for i in range(5)})
 
         self.Upsample = nn.UpsamplingBilinear2d(scale_factor=2)
 
     def forward(self, x):
         arr_x = []
-        for i in range(7):
+        for i in range(6):
             x = self.Encoder[f'layer_{i}'](x)
             arr_x.append(x)
 
 
         arr_y = []
-        arr_y.append(arr_x[6])
-        y = arr_x[6]
-        for i in range(6):
+        arr_y.append(arr_x[5])
+        y = arr_x[5]
+        for i in range(5):
             y = self.Decoder[f'layer_{i}'](y)
-            y = torch.cat((y, arr_x[5-i]), 1)
+            y = torch.cat((y, arr_x[4-i]), 1)
             arr_y.append(y)
 
         arr_y.append(self.Upsample(y))
@@ -42,7 +42,7 @@ class MultilevelAttributesEncoder(nn.Module):
 
 
 class ADD(nn.Module):
-    def __init__(self, h_inchannel, z_inchannel, z_id_size=256):
+    def __init__(self, h_inchannel, z_inchannel, z_id_size=128):
         super(ADD, self).__init__()
 
         self.BNorm = nn.BatchNorm2d(h_inchannel)
@@ -115,9 +115,9 @@ class ADDGenerator(nn.Module):
         self.convt = nn.ConvTranspose2d(z_id_size, 1024, kernel_size=2, stride=1, padding=0)
         self.Upsample = nn.UpsamplingBilinear2d(scale_factor=2)
 
-        self.h_inchannel = [1024, 1024, 1024, 1024, 512, 256, 128, 64]
-        self.z_inchannel = [1024, 2048, 1024, 512, 256, 128, 64, 64]
-        self.h_outchannel = [1024, 1024, 1024, 512, 256, 128, 64, 3]
+        self.h_inchannel = [1024, 1024, 1024, 512, 256, 128, 64]
+        self.z_inchannel = [1024, 1024, 512, 256, 128, 64, 64]
+        self.h_outchannel = [1024, 1024, 512, 256, 128, 64, 3]
 
         self.model = nn.ModuleDict(
             {f"layer_{i}" : ADDResBlock(self.h_inchannel[i], self.z_inchannel[i], self.h_outchannel[i])
@@ -127,8 +127,8 @@ class ADDGenerator(nn.Module):
     def forward(self, z_id, z_att):
         x = self.convt(z_id.unsqueeze(-1).unsqueeze(-1))
 
-        for i in range(7):
+        for i in range(6):
             x = self.Upsample(self.model[f"layer_{i}"](x, z_att[i], z_id))
-        x = self.model["layer_7"](x, z_att[7], z_id)
+        x = self.model["layer_7"](x, z_att[6], z_id)
 
         return nn.Sigmoid()(x)
