@@ -10,6 +10,7 @@ import torch
 from torchvision import transforms
 import cv2
 from aei_net import AEINet
+import onnxruntime as ort
 
 
 parser = argparse.ArgumentParser()
@@ -25,6 +26,8 @@ parser.add_argument("--target_image", type=str, default="data/faceshifter-datase
                             help="path of preprocessed target face image"),
 parser.add_argument("--gpu_num", type=int, default=0,
                     help="number of gpu"),
+parser.add_argument("--output_image", type=str, default="output.png",
+                    help="path of output image"),
 parser.add_argument("--save_path", type=str, default="image.npy")
 args = parser.parse_args()
 
@@ -60,6 +63,27 @@ image = image[0].transpose(1,2,0).astype(np.uint8)
 print (image.shape)
 np.save(args.save_path, image)
 
+#test pytorch model with onnx 
+ort_session = ort.InferenceSession("ONNX/single/MultilevelEncoder.onnx" , providers = EP_list)
+
+target_img = Image.open("data/faceshifter-datasets-preprocessed/train/00000011.png")
+target = np.array(target_img).astype(np.float32)
+target = target.transpose(2,0,1)
+target = target[np.newaxis, :]
+
+z_id = np.load("preprocess/z_id.npy").astype(np.float32)
+
+
+outputs = ort_session.run(
+    None,
+    {"target": target},
+)
+
+with torch.no_grad():
+    image= model.G(z_id, outputs[0])
+    
+output = transforms.ToPILImage()(output.cpu().squeeze().clamp(0, 1))
+output.save(args.output_image)
 """
 input order
 input.5
