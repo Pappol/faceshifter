@@ -16,7 +16,7 @@ def main(args):
     os.makedirs(save_path, exist_ok=True)
 
     checkpoint_callback = ModelCheckpoint(
-        filepath=os.path.join(hp.log.chkpt_dir, args.name),
+        #filepath=os.path.join(hp.log.chkpt_dir, args.name),
         monitor='val_loss',
         verbose=True,
         save_top_k=args.save_top_k,  # save all
@@ -24,11 +24,11 @@ def main(args):
 
     trainer = Trainer(
         logger=pl_loggers.TensorBoardLogger(hp.log.log_dir),
-        early_stop_callback=None,
+        #early_stop_callback=None,
         checkpoint_callback=checkpoint_callback,
         weights_save_path=save_path,
         gpus=-1 if args.gpus is None else args.gpus,
-        distributed_backend='ddp',
+        #distributed_backend='ddp',
         num_sanity_val_steps=1,
         resume_from_checkpoint=args.checkpoint_path,
         gradient_clip_val=hp.model.grad_clip,

@@ -121,7 +121,7 @@ class ADDGenerator(nn.Module):
 
         self.model = nn.ModuleDict(
             {f"layer_{i}" : ADDResBlock(self.h_inchannel[i], self.z_inchannel[i], self.h_outchannel[i])
-        for i in range(8)})
+        for i in range(7)})
 
 
     def forward(self, z_id, z_att):
