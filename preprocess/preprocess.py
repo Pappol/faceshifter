@@ -15,7 +15,7 @@ parser.add_argument("--root", type=str, required=True)
 parser.add_argument("--output_dir", type=str, required=True)
 args = parser.parse_args()
 
-output_size = 256
+output_size = 128
 transform_size=4096
 enable_padding=True
 detector = dlib.get_frontal_face_detector()
