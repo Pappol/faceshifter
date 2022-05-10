@@ -53,24 +53,38 @@ def main(args):
 
 #test pytorch model with onnx
 def test_py_onnx(args):
-    device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else 'cpu')
+    device = 'cpu'
 
     hp = OmegaConf.load(args.config)
     model = AEINet.load_from_checkpoint(args.checkpoint_path, hp=hp)
     model.eval()
     model.freeze()
     model.to(device)
-    target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
+    # target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
 
     EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
 
     ort_session = ort.InferenceSession(args.model_path+"MultilevelEncoder.onnx" , providers = EP_list)
+    ort_session_ADD = ort.InferenceSession(args.model_path+"ADD_gen.onnx" , providers = EP_list)
 
-    target_img = Image.open(args.target_image)
-    target = np.array(target_img).astype(np.float32)
-    target = target.transpose(2,0,1)
+    # target_img = Image.open(args.target_image)
+    # target = np.array(target_img).astype(np.float32)
+    # target = target.transpose(2,0,1)
+    # target = target[np.newaxis, :]
+
+    target=cv2.imread(args.target_image).astype(np.float32)
+    target=cv2.resize(target, (256,256))
+    target=cv2.cvtColor(target, cv2.COLOR_BGR2RGB)
+
+    target = target.transpose(2,0,1)/255.0
     target = target[np.newaxis, :]
-    source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
+
+    # source_img = transforms.ToTensor()(Image.open(args.source_image)).unsqueeze(0).to(device)
+    source_image=cv2.imread(args.source_image)
+    source_image=cv2.resize(source_image, (256,256))
+    source_image=cv2.cvtColor(source_image, cv2.COLOR_BGR2RGB)
+    source_img = transforms.ToTensor()(source_image).unsqueeze(0).to(device)
+    
 
     z_id = model.Z(F.interpolate(source_img, size=112, mode='bilinear'))
     z_id = F.normalize(z_id)
@@ -81,35 +95,39 @@ def test_py_onnx(args):
         {"target": target},
     )
     #convert to tensor outputs
+    feature_map_torch = []
     feature_map = []
     for i in outputs:
-        feature_map.append(torch.from_numpy(i))
-
-    for i in feature_map:
-        i.to(device)
-        print (i.type())
+        feature_map_torch.append(torch.from_numpy(i))
+        feature_map.append(i)
+        print (i.dtype)
         print (i.shape)
 
     with torch.no_grad():
-        image= model.G(z_id, feature_map)
+        image_torch= model.G(z_id, feature_map_torch)
+
+    output = ort_session_ADD.run([], {
+                "z_id": z_id.cpu().numpy(), 
+                "z_1": feature_map[0], 
+                "z_2": feature_map[1], 
+                "z_3": feature_map[2], 
+                "z_4": feature_map[3], 
+                "z_5": feature_map[4], 
+                "z_6": feature_map[5], 
+                "z_7": feature_map[6], 
+                "z_8": feature_map[7]})
+    print(np.max(output))
+    print(np.min(output))
+    # print(output)
+    print(type(output[0]))
+    image =output[0]
+    print (image.shape)
+    image = (image[0]*255.0).transpose(1,2,0).astype(np.uint8)[:,:,::-1]
+    print (image.shape)
+    cv2.imwrite('out_onnx.png', image)
         
-    output = transforms.ToPILImage()(image.cpu().clamp(0, 1))
+    output = transforms.ToPILImage()(torch.squeeze(image_torch.cpu().clamp(0, 1)))
     output.save(args.output_image)
-
-
-"""
-input order
-input.5
-input.7
-input.27
-input.47
-input.67
-input.93
-input.119
-input.145
-input.171
-
-"""
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
