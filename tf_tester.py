@@ -57,7 +57,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
                             help="path of configuration yaml file"),
-    parser.add_argument("--model_path", type=str, default="ONNX/",
+    parser.add_argument("--model_path", type=str, default="ONNX/single/",
                             help="path of onnx extra data folder"),
     parser.add_argument("--shape_predictor", type=str, default="preprocess/shape_predictor_68_face_landmarks.dat",
                             help="path of z_id tensor")

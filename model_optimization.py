@@ -15,23 +15,6 @@ import random
 import cv2
 
 
-parser = argparse.ArgumentParser()
-parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
-                    help="path of configuration yaml file"),
-parser.add_argument("--model_path", type=str, default="ONNX/",
-                    help="path of onnx extra data folder"),
-parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
-                    help="path of aei-net pre-trained file"),
-parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
-                    help="path of preprocessed source face image"),
-parser.add_argument("--gpu_num", type=int, default=0,
-                    help="number of gpu"),
-parser.add_argument("--num_images", type=int, default=50,
-                    help="number of images used to convert the model")
-
-args = parser.parse_args()
-
-
 def optimizeMultiLevelEncoder(argument):
     
     #load model 
@@ -45,11 +28,12 @@ def optimizeMultiLevelEncoder(argument):
             target_img_number = (i)
             target_img_path = os.path.join(argument.images_folder, f"{target_img_number:08}.png")
             #image preparation
-            img = cv2.imread(target_img_path)
-            img = img.astype(np.float32)
-            img = img/255.0
-            img = np.transpose(img, (2, 0, 1))
-            img = np.expand_dims(img, axis=0)
+            img = cv2.imread(target_img_path).astype(np.float32)
+            img = cv2.resize(img, (256,256))
+            img=cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+
+            img = img.transpose(2,0,1)/255.0
+            img = img[np.newaxis, :]
 
             yield [(img)]
     
@@ -106,15 +90,15 @@ def optizeADD(argument):
 
             feature_map = model.E(target_img)
             #converting to cpu and numpy and prepraring with dictionary signature
-            yield {"input.5": z_id.cpu().numpy(),
-                    "input.119": feature_map[5].cpu().numpy(),
-                    "input.145": feature_map[6].cpu().numpy(),
-                    "input.171": feature_map[7].cpu().numpy(),
-                    "input.27": feature_map[1].cpu().numpy(),
-                    "input.47": feature_map[2].cpu().numpy(),
-                    "input.67": feature_map[3].cpu().numpy(),
-                    "input.7": feature_map[0].cpu().numpy(),
-                    "input.93": feature_map[4].cpu().numpy()}
+            yield {"z_id": z_id.cpu().numpy(), 
+                "z_1": feature_map[0].cpu().numpy(), 
+                "z_2": feature_map[1].cpu().numpy(), 
+                "z_3": feature_map[2].cpu().numpy(), 
+                "z_4": feature_map[3].cpu().numpy(), 
+                "z_5": feature_map[4].cpu().numpy(), 
+                "z_6": feature_map[5].cpu().numpy(), 
+                "z_7": feature_map[6].cpu().numpy(), 
+                "z_8": feature_map[7].cpu().numpy()}
 
     #converter setup
     converter.representative_dataset = representative_dataset_gen
@@ -129,5 +113,27 @@ def optizeADD(argument):
     with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
         f.write(tflite_quant_model)
 
-optizeADD(args)
-optimizeMultiLevelEncoder(args)
+def main(args):
+
+    optizeADD(args)
+    optimizeMultiLevelEncoder(args)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config", type=str, default="config/train.yaml",
+                        help="path of configuration yaml file"),
+    parser.add_argument("--model_path", type=str, default="ONNX/",
+                        help="path of onnx extra data folder"),
+    parser.add_argument("--checkpoint_path", type=str, default="chkpt/30.ckpt",
+                        help="path of aei-net pre-trained file"),
+    parser.add_argument("--images_folder", type=str, default="data/faceshifter-datasets-preprocessed/train/",
+                        help="path of preprocessed source face image"),
+    parser.add_argument("--gpu_num", type=int, default=0,
+                        help="number of gpu"),
+    parser.add_argument("--num_images", type=int, default=50,
+                        help="number of images used to convert the model")
+
+    args = parser.parse_args()
+
+    main(args)
