@@ -28,9 +28,7 @@ img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 img = img.transpose(2,0,1)/255.0
 img = img[np.newaxis, :]
 
-
 z_id = np.load(args.z_id_path).astype(np.float32)
-
 
 interpreter = tflite.Interpreter(args.model_path+ "MultiLevelEncoder_gen_Lite_optimized.tflite", num_threads=10)
 interpreter.allocate_tensors()
@@ -73,10 +71,15 @@ interpreter_ADD.invoke()
 
 output_image = interpreter_ADD.get_tensor(output_details_ADD[0]['index'])
 
-opt = np.transpose(output_image[0], (2, 1, 0))
+print(np.max(output_image))
+print(np.min(output_image))
+print(type(output_image[0]))
 
-plt.imshow(opt)
-plt.show()
+image =output_image[0]
+print (image.shape)
+image = (image[0]*255.0).transpose(1,2,0).astype(np.uint8)[:,:,::-1]
+print (image.shape)
+cv2.imwrite('out_optim.png', image)
 
 """
 print ("start")

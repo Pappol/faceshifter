@@ -51,7 +51,7 @@ def optimizeMultiLevelEncoder(argument):
 
 def optizeADD(argument):
 
-    device = torch.device(f"cuda:{argument.gpu_num}" if torch.cuda.is_available() else 'cpu')
+    device = 'cpu'
     #set experimental memory growth
     physical_devices = tf.config.list_physical_devices('GPU')
     tf.config.experimental.set_memory_growth(
@@ -102,9 +102,9 @@ def optizeADD(argument):
 
     #converter setup
     converter.representative_dataset = representative_dataset_gen
-    #converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
-    #converter.inference_input_type = tf.float32
-    #converter.inference_output_type = tf.float32
+    converter.target_spec.supported_ops = [tf.lite.OpsSet.TFLITE_BUILTINS_INT8]
+    converter.inference_input_type = tf.float32
+    converter.inference_output_type = tf.float32
 
     #convert the model
     tflite_quant_model = converter.convert()
