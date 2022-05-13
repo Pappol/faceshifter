@@ -113,10 +113,27 @@ def optizeADD(argument):
     with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
         f.write(tflite_quant_model)
 
+def standard_quantization_add(args):
+    converter = tf.lite.TFLiteConverter.from_saved_model(args.model_path + "ADD_gen")
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_quant_model = converter.convert()
+
+    with open(args.model_path + "ADD_gen_Lite_optimized.tflite", 'wb') as f:
+        f.write(tflite_quant_model)
+
+def standard_quantization_multilevel(args):
+    converter = tf.lite.TFLiteConverter.from_saved_model(args.model_path + "MultilevelEncoder")
+    converter.optimizations = [tf.lite.Optimize.DEFAULT]
+    tflite_quant_model = converter.convert()
+
+    with open(args.model_path + "MultilevelEncoder_Lite_optimized.tflite", 'wb') as f:
+        f.write(tflite_quant_model)
+
+
 def main(args):
 
-    optizeADD(args)
-    optimizeMultiLevelEncoder(args)
+    standard_quantization_multilevel(args)
+    standard_quantization_add(args)
 
 
 if __name__ == "__main__":

@@ -13,43 +13,6 @@ from aei_net import AEINet
 import onnxruntime as ort
 import torch.nn.functional as F
 
-def old_test(args):
-    EP_list = ['CUDAExecutionProvider', 'CPUExecutionProvider']
-    session = onnxruntime.InferenceSession(args.model_path, providers=EP_list)
-    input = session.get_inputs()
-
-    #load input data
-    z_id = np.load("preprocess/z_id.npy").astype(np.float32)
-    device = torch.device(f"cuda:{args.gpu_num}" if torch.cuda.is_available() else 'cpu')
-
-    hp = OmegaConf.load(args.config)
-    model = AEINet.load_from_checkpoint(args.checkpoint_path, hp=hp)
-    model.eval()
-    model.freeze()
-    model.to(device)
-    target_img = transforms.ToTensor()(Image.open(args.target_image)).unsqueeze(0).to(device)
-
-    feature_map = model.E(target_img)
-
-    #run the model
-    output = session.run([], {input[0].name: z_id, input[1].name: feature_map[0].cpu().detach().numpy(), 
-                input[2].name: feature_map[1].cpu().detach().numpy(), input[3].name: feature_map[2].cpu().detach().numpy(), 
-                input[4].name: feature_map[3].cpu().detach().numpy(), input[5].name: feature_map[4].cpu().detach().numpy(), 
-                input[6].name: feature_map[5].cpu().detach().numpy(), input[7].name: feature_map[6].cpu().detach().numpy(), 
-                input[8].name: feature_map[7].cpu().detach().numpy()})
-    for i in output:
-        print (i.shape)
-    print(type(output[0]))
-    image =output[0]
-    print (image.shape)
-    image = image[0].transpose(1,2,0).astype(np.uint8)
-    print (image.shape)
-    np.save(args.save_path, image)
-
-def main(args):
-
-    test_py_onnx(args)
-
 
 #test pytorch model with onnx
 def test_py_onnx(args):
@@ -128,6 +91,13 @@ def test_py_onnx(args):
         
     output = transforms.ToPILImage()(torch.squeeze(image_torch.cpu().clamp(0, 1)))
     output.save(args.output_image)
+
+
+
+def main(args):
+
+    test_py_onnx(args)
+
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
