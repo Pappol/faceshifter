@@ -8,8 +8,8 @@ arcface:
   vector_size: 128
 
 data:
-  dataset_dir: './results/train/'
-  valset_dir: './results/val'
+  dataset_dir: 'results/train/'
+  valset_dir: 'results/val/'
 
 model:
   learning_rate_E_G: 4e-4
